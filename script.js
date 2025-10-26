@@ -854,13 +854,13 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.typeInputArea.disabled = false;
         dom.typeSubmitButton.disabled = false;
         dom.typeFeedback.classList.add('hidden');
-        dom.typeOverrideWrongButton.classList.add('hidden'); // MODIFIED
-        dom.typeOverrideCorrectButton.classList.add('hidden'); // NEW
-        app.lastTypeCard = null; // Clear override cache
-
-        dom.typeInputArea.focus(); // Focus the input
-    }
-
+        
+        // MODIFIED: Explicitly clear feedback text
+        dom.typeFeedbackMessage.textContent = '';
+        dom.typeFeedbackCorrectAnswer.textContent = '';
+        
+        dom.typeOverrideWrongButton.classList.add('hidden'); 
+        dom.typeOverrideCorrectButton.classList.add('hidden'); 
     /**
      * Handles the user submitting a typed answer.
      */
@@ -1324,5 +1324,3 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 });
-
-
