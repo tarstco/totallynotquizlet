@@ -306,7 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (mode === 'learn') {
             dom.learnModeDisabled.classList.add('hidden'); // Hide disabled view
             // Note: startLearnMode() will handle showing/hiding quiz vs. complete
-            startLearnMode();
+            // startLearnMode(); // <-- REMOVED FROM HERE
         }
 
         // NEW: Update header title
@@ -327,16 +327,29 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.classList.toggle('active', btn.dataset.mode === mode);
         });
 
-        if (mode === 'flashcards') {
-            // NEW: Create study deck
+        // NEW: Create studyDeck *before* mode-specific logic
+        // This ensures studyDeck is always up-to-date with settings
+        if (app.currentDeck.cards.length > 0) {
             app.studyDeck = [...app.currentDeck.cards];
             if (app.currentDeck.settings.shuffle) {
                 shuffleArray(app.studyDeck);
             }
-            app.currentCardIndex = 0;
+        } else {
+            app.studyDeck = [];
+        }
 
-            renderFlashcardContent(); // MODIFIED: Call content-only function
-            dom.flashcardContainer.classList.remove('is-flipped'); // Ensure it starts on the front
+
+        if (mode === 'flashcards') {
+            // studyDeck is already created and shuffled (or not)
+            app.currentCardIndex = 0;
+            renderFlashcardContent();
+            dom.flashcardContainer.classList.remove('is-flipped');
+        } else if (mode === 'learn') {
+            // Now that studyDeck is ready, start learn mode
+            // This check is needed again in case the mode was set programmatically
+            if (app.currentDeck.cards.length >= 4) {
+                 startLearnMode();
+            }
         }
     }
 
@@ -1058,4 +1071,5 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 });
+
 
