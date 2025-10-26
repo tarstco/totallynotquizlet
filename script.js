@@ -306,7 +306,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (mode === 'learn') {
             dom.learnModeDisabled.classList.add('hidden'); // Hide disabled view
             // Note: startLearnMode() will handle showing/hiding quiz vs. complete
-            // startLearnMode(); // <-- REMOVED FROM HERE
         }
 
         // NEW: Update header title
@@ -348,7 +347,12 @@ document.addEventListener('DOMContentLoaded', () => {
             // Now that studyDeck is ready, start learn mode
             // This check is needed again in case the mode was set programmatically
             if (app.currentDeck.cards.length >= 4) {
-                 startLearnMode();
+                 // MODIFIED: Only start a new session if one isn't active
+                 if (app.learnSessionCards.length === 0) {
+                    startLearnMode();
+                 }
+                 // If a session is active (length > 0), do nothing.
+                 // This preserves the user's progress when switching tabs.
             }
         }
     }
@@ -446,6 +450,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function hideSettingsModal() {
         dom.settingsModalOverlay.classList.remove('visible');
+        
+        // NEW: Force-reset the learn session so new settings (like shuffle) apply
+        if (app.currentMode === 'learn') {
+            app.learnSessionCards = []; 
+        }
+
         // If mode is flashcards or learn, reset the view to apply changes
         if (app.currentMode === 'flashcards' || app.currentMode === 'learn') {
             setMode(app.currentMode);
@@ -622,6 +632,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         renderLearnQuestion();
     }
+
+
 
     function renderLearnQuestion() {
         // NEW: Check for completion
@@ -1071,5 +1083,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 });
-
 
