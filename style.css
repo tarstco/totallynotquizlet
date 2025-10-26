@@ -1,0 +1,700 @@
+/* --- CSS Variables (Color Palette) --- */
+
+/* DEFAULT (DARK MODE)
+  User requested a dark blue default background
+*/
+:root {
+    --color-primary: #4f6dff; /* Brighter blue for dark mode */
+    --color-primary-light: #2a3b7d;
+    --color-primary-dark: #3a5bf0;
+    --color-secondary: #ffcd1f; /* Quizlet Yellow */
+    
+    --color-bg: #131b33; /* Dark Blue Background */
+    --color-bg-secondary: #1a2342; /* Slightly lighter bg */
+    --color-card-bg: #232e54; /* Card Background */
+    --color-text-primary: #f0f3ff; /* Light text */
+    --color-text-secondary: #a0aec0; /* Muted light text */
+    --color-border: #3a497c;
+    
+    --color-correct: #38c172;
+    --color-correct-light: #1f4f31;
+    --color-incorrect: #e3342f;
+    --color-incorrect-light: #52201f;
+
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.2);
+    --shadow-lg: 0 10px 30px rgba(0,0,0,0.3);
+
+    --border-radius-card: 24px; /* More rounded */
+    --border-radius-button: 12px; /* More rounded */
+}
+
+/* LIGHT MODE
+  This class is toggled by JS
+*/
+body.light-mode {
+    --color-primary: #4257b2;
+    --color-primary-light: #f0f3ff;
+    --color-primary-dark: #3a4b99;
+    --color-secondary: #ffcd1f;
+    
+    --color-bg: #f6f7fb;
+    --color-bg-secondary: #ffffff;
+    --color-card-bg: #ffffff;
+    --color-text-primary: #303545;
+    --color-text-secondary: #586380;
+    --color-border: #e4e7eb;
+    
+    --color-correct: #28a745;
+    --color-correct-light: #e9f6eb;
+    --color-incorrect: #dc3545;
+    --color-incorrect-light: #fbebed;
+
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 12px rgba(48,53,69,0.1);
+    --shadow-lg: 0 10px 30px rgba(48,53,69,0.15);
+}
+
+/* --- Base Styles --- */
+body {
+    background-color: var(--color-bg);
+    color: var(--color-text-primary);
+    font-family: 'Inter', sans-serif;
+    font-weight: 500; /* Bolder base font */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    
+    /* MODIFIED: Allow text selection in inputs */
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* Allow selection on text inputs and content */
+input, textarea, [contenteditable="true"],
+#flashcard-front p, #flashcard-back p, #learn-term, .learn-option {
+    user-select: text;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+}
+
+
+#app-container {
+    max-width: 768px; /* Slightly narrower than before */
+}
+
+/* --- Theme Toggle & Settings Buttons --- */
+#theme-toggle-button,
+#settings-button {
+    color: var(--color-text-secondary);
+}
+#theme-toggle-button:hover,
+#settings-button:hover {
+    color: var(--color-secondary);
+    background-color: var(--color-card-bg);
+}
+/* JS toggles the 'hidden' class on the icons */
+body.light-mode #theme-icon-sun {
+    display: none;
+}
+body.light-mode #theme-icon-moon {
+    display: block;
+}
+body:not(.light-mode) #theme-icon-sun {
+    display: block;
+}
+body:not(.light-mode) #theme-icon-moon {
+    display: none;
+}
+
+
+/* --- Header & Navigation --- */
+header h1 {
+    color: var(--color-text-primary);
+    font-weight: 900; /* Thicker font */
+    font-size: 2.5rem; /* Larger title */
+    transition: color 0.3s ease;
+}
+
+/* MODIFIED: Reverted to tab style */
+header nav {
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+    border-bottom: 2px solid var(--color-border);
+    position: relative;
+    top: 2px;
+}
+
+/* MODIFIED: Reverted to tab style */
+.nav-button {
+    background: transparent;
+    color: var(--color-text-secondary);
+    font-weight: 700; /* Bolder font */
+    font-size: 1.1rem;
+    padding: 1rem 1.5rem;
+    border-radius: 0;
+    border-bottom: 4px solid transparent;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+/* MODIFIED: Reverted to tab style */
+.nav-button:hover {
+    color: var(--color-text-primary);
+}
+
+/* MODIFIED: Reverted to tab style */
+.nav-button.active {
+    color: var(--color-primary);
+    background-color: transparent;
+    border-bottom-color: var(--color-primary);
+}
+
+/* Big "Create Deck" / "Load Deck" buttons */
+.main-action-button {
+    background-color: var(--color-primary);
+    color: white;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: var(--border-radius-button);
+    box-shadow: var(--shadow-sm);
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+.main-action-button:hover {
+    background-color: var(--color-primary-dark);
+}
+.main-action-button:active {
+    transform: scale(0.98);
+}
+
+/* NEW: Secondary button style */
+.secondary-action-button {
+    background-color: var(--color-card-bg);
+    color: var(--color-text-secondary);
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: var(--border-radius-button);
+    border: 2px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+}
+.secondary-action-button:hover {
+    background-color: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+    border-color: var(--color-text-secondary);
+}
+.secondary-action-button:active {
+    transform: scale(0.98);
+}
+
+/* This targets the "Create a Deck" button on the empty page */
+#empty-deck-view .nav-button {
+    background-color: var(--color-primary);
+    border-bottom: none; /* Make this one a normal button */
+    border-radius: var(--border-radius-button);
+}
+#empty-deck-view .nav-button:hover {
+    background-color: var(--color-primary-dark);
+}
+
+
+/* MODIFIED: Reverted Share button to special style */
+#share-deck-button {
+    background-color: var(--color-primary-light);
+    color: var(--color-primary);
+    font-weight: 700;
+    border-radius: var(--border-radius-button);
+    padding: 0.75rem 1.25rem;
+    margin-left: 1rem;
+    border-bottom: none;
+    transition: background-color 0.2s ease;
+}
+#share-deck-button:hover {
+    background-color: var(--color-primary);
+    color: var(--color-card-bg);
+}
+body.light-mode #share-deck-button:hover {
+    color: white;
+}
+
+
+/* --- View Switching --- */
+.app-view {
+    display: none;
+}
+body[data-mode="create"] #create-view,
+body[data-mode="flashcards"] #flashcards-view,
+body[data-mode="learn"] #learn-view,
+body[data-mode="empty"] #empty-deck-view {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Container boxes --- */
+/* MODIFIED: Removed #create-view div from this rule */
+#empty-deck-view, 
+#learn-mode-disabled,
+#learn-question-box,
+#learn-complete-view { /* NEW */
+    background-color: var(--color-bg-secondary);
+    box-shadow: var(--shadow-md);
+    border-radius: var(--border-radius-card);
+    border: 1px solid var(--color-border);
+}
+
+/* --- Create View --- */
+#deck-title-input {
+    background-color: transparent;
+    border: none;
+    border-bottom: 2px solid var(--color-border);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    padding: 0.5rem 0.25rem;
+    transition: border-color 0.2s ease;
+}
+#deck-title-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+.create-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--color-text-secondary);
+    margin-top: 0.25rem;
+    padding: 0 0.25rem;
+    text-transform: uppercase; /* NEW */
+}
+
+.create-toggle-button {
+    background-color: var(--color-card-bg);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+    border-radius: var(--border-radius-button);
+    transition: all 0.2s ease;
+}
+.create-toggle-button:hover {
+    background-color: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+}
+.create-toggle-button.active {
+    background-color: var(--color-primary-light);
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+    font-weight: 700;
+}
+body.light-mode .create-toggle-button.active {
+    color: var(--color-primary);
+}
+
+
+.card-editor-row {
+    background-color: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-button);
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+/* Style for when dragging */
+.card-editor-row.dragging {
+    opacity: 0.5;
+    box-shadow: var(--shadow-lg);
+    background-color: var(--color-bg-secondary);
+}
+
+.drag-handle {
+    color: var(--color-text-secondary);
+    cursor: grab;
+    padding-top: 1.25rem; /* Align with center of textarea */
+    flex-shrink: 0;
+}
+.drag-handle:active {
+    cursor: grabbing;
+}
+.drag-handle svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.card-row-number {
+    font-weight: 700;
+    color: var(--color-text-secondary);
+    padding-top: 1.25rem; /* Align with center of textarea */
+    flex-shrink: 0;
+}
+
+.card-input-wrapper {
+    flex-grow: 1;
+}
+
+.card-input-wrapper textarea {
+    width: 100%;
+    background-color: transparent;
+    border: none;
+    border-bottom: 2px solid var(--color-border);
+    color: var(--color-text-primary);
+    padding: 0.5rem 0.25rem;
+    font-weight: 500;
+    resize: none; /* Disable manual resize */
+    overflow: hidden; /* Hide scrollbar */
+    min-height: 2.5rem; /* Start height */
+    line-height: 1.5;
+    transition: border-color 0.2s ease;
+}
+.card-input-wrapper textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.delete-card-button {
+    background: none;
+    border: none;
+    color: var(--color-text-secondary);
+    flex-shrink: 0;
+    padding-top: 1.1rem;
+    transition: color 0.2s ease;
+}
+.delete-card-button:hover {
+    color: var(--color-incorrect);
+}
+.delete-card-button svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+#add-card-button {
+    width: 100%;
+    border: 2px dashed var(--color-border);
+    color: var(--color-text-secondary);
+    font-weight: 700;
+    padding: 1.25rem;
+    border-radius: var(--border-radius-button);
+    transition: all 0.2s ease;
+}
+#add-card-button:hover {
+    background-color: var(--color-card-bg);
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+
+#create-example-guide {
+    background-color: var(--color-bg);
+    border: 1px dashed var(--color-border);
+    color: var(--color-text-secondary);
+    border-radius: var(--border-radius-button);
+}
+#deck-input-area {
+    font-family: monospace;
+    font-size: 0.95rem;
+    background-color: var(--color-bg);
+    border: 2px solid var(--color-border);
+    border-radius: var(--border-radius-button);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.04);
+    color: var(--color-text-primary);
+}
+#deck-input-area:focus {
+    border-color: var(--color-primary);
+    background-color: var(--color-bg);
+}
+#parse-deck-button {
+    border-radius: var(--border-radius-button);
+}
+
+/* --- Flashcard Mode --- */
+.perspective-container {
+    perspective: 1500px;
+    height: 400px; /* Taller card */
+    /* REMOVED: overflow: hidden; */
+}
+.flashcard {
+    transform-style: preserve-3d;
+    /* MODIFIED: Kept original flip, added opacity transition for fade */
+    transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease-in-out;
+    box-shadow: var(--shadow-lg);
+    border-radius: var(--border-radius-card); /* More rounded */
+}
+
+/* NEW: This class disables the flip animation temporarily */
+.flashcard.no-flip-animation {
+    transition: opacity 0.2s ease-in-out; /* Only transition opacity */
+}
+
+.flashcard.is-flipped {
+    transform: rotateY(180deg);
+}
+
+/* REMOVED: All slide animation classes */
+
+.card-face {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    background-color: var(--color-card-bg);
+    border-radius: var(--border-radius-card); /* More rounded */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem;
+    border: 1px solid var(--color-border);
+    overflow-wrap: break-word;
+    word-break: break-word;
+    text-align: center;
+}
+#flashcard-front p {
+    font-size: 2.5rem;
+    font-weight: 800; /* Bolder */
+}
+#flashcard-back p {
+    font-size: 1.75rem;
+    font-weight: 600; /* Bolder */
+    color: var(--color-text-secondary);
+}
+.card-back {
+    transform: rotateY(180deg);
+}
+
+/* Flashcard Navigation */
+#flashcard-nav {
+    margin-top: 2rem;
+    align-items: center;
+}
+#flashcard-nav button {
+    background-color: var(--color-card-bg);
+    color: var(--color-primary);
+    font-weight: 700;
+    font-size: 1.25rem;
+    border-radius: 50%; /* Circle buttons */
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    width: 56px; /* Larger */
+    height: 56px; /* Larger */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+#flashcard-nav button:hover {
+    background-color: var(--color-primary-light);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+    border-color: var(--color-primary);
+}
+body.light-mode #flashcard-nav button:hover {
+    border-color: transparent;
+}
+#card-counter {
+    font-size: 1.1rem;
+    font-weight: 700; /* Bolder */
+    color: var(--color-text-secondary);
+}
+
+/* --- Learn Mode --- */
+#learn-term {
+    font-size: 2rem;
+    font-weight: 700; /* Bolder */
+}
+#learn-question-box {
+    border-radius: var(--border-radius-card);
+}
+
+.learn-option {
+    background-color: var(--color-card-bg);
+    border: 2px solid var(--color-border);
+    border-radius: var(--border-radius-button); /* More rounded */
+    padding: 1.25rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600; /* Bolder */
+    text-align: left;
+    color: var(--color-text-primary);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+}
+.learn-option:not(:disabled):hover {
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    background-color: var(--color-bg-secondary);
+}
+
+.learn-option.correct {
+    background-color: var(--color-correct-light);
+    border-color: var(--color-correct);
+    color: var(--color-correct);
+    font-weight: 700;
+}
+.learn-option.incorrect {
+    background-color: var(--color-incorrect-light);
+    border-color: var(--color-incorrect);
+    color: var(--color-incorrect);
+    font-weight: 700;
+}
+.learn-option:disabled {
+    opacity: 1; /* Keep full opacity to show results */
+    cursor: not-allowed;
+}
+
+#learn-feedback {
+    font-size: 1.1rem;
+    font-weight: 700; /* Bolder */
+    border-radius: var(--border-radius-button);
+    padding: 1rem;
+}
+#learn-feedback.correct {
+    background-color: var(--color-correct-light);
+    color: var(--color-correct);
+}
+#learn-feedback.incorrect {
+    background-color: var(--color-incorrect-light);
+    color: var(--color-incorrect);
+}
+
+/* --- Empty / Disabled States --- */
+#empty-deck-view p, #learn-mode-disabled p, #learn-complete-view p { /* NEW */
+    color: var(--color-text-secondary);
+    font-size: 1.1rem;
+}
+
+
+/* --- Toast Notification --- */
+#toast-notification {
+    background-color: var(--color-card-bg);
+    color: var(--color-text-primary);
+    font-weight: 600;
+    border-radius: var(--border-radius-button);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-lg);
+    padding: 1rem 1.5rem;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+#toast-notification.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* --- NEW: Footer Styles --- */
+footer {
+    border-color: var(--color-border);
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+}
+#about-button {
+    color: var(--color-text-secondary);
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+#about-button:hover {
+    color: var(--color-primary);
+}
+
+
+/* --- NEW: Modal Styles (Shared) --- */
+#about-modal-overlay,
+#settings-modal-overlay {
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+#about-modal-overlay.visible,
+#settings-modal-overlay.visible {
+    visibility: visible;
+    opacity: 1;
+}
+#about-modal-overlay .modal-backdrop,
+#settings-modal-overlay .modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+#about-modal-content,
+#settings-modal-content {
+    background-color: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-lg);
+    color: var(--color-text-primary);
+    transform: scale(0.95);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+#about-modal-overlay.visible #about-modal-content,
+#settings-modal-overlay.visible #settings-modal-content {
+    transform: scale(1);
+    opacity: 1;
+}
+#about-modal-close,
+#settings-modal-close {
+    color: var(--color-text-secondary);
+    transition: color 0.2s ease;
+    background: none;
+    border: none;
+    line-height: 1;
+}
+#about-modal-close:hover,
+#settings-modal-close:hover {
+    color: var(--color-text-primary);
+}
+
+/* --- NEW: Settings Modal Specific Styles --- */
+#setting-deck-title {
+    /* Reuse styles from create view title input */
+    background-color: transparent;
+    border: none;
+    border-bottom: 2px solid var(--color-border);
+    font-size: 1.25rem; /* Slightly smaller for modal */
+    font-weight: 700;
+    color: var(--color-text-primary);
+    padding: 0.5rem 0.25rem;
+    transition: border-color 0.2s ease;
+}
+#setting-deck-title:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.settings-toggle-button {
+    /* Reuse styles from create view toggle button */
+    background-color: var(--color-card-bg);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+    padding: 0.75rem 1.25rem;
+    font-weight: 600;
+    border-radius: var(--border-radius-button);
+    transition: all 0.2s ease;
+    text-align: center;
+}
+.settings-toggle-button:hover {
+    background-color: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+}
+.settings-toggle-button.active {
+    background-color: var(--color-primary-light);
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+    font-weight: 700;
+}
+body.light-mode .settings-toggle-button.active {
+    color: var(--color-primary);
+}
+
+
+/* --- Tailwind CSS Overrides/Helpers --- */
+/* FIXED: Removed the problematic .hidden rule. 
+  The 'hidden' class from Tailwind will now work as expected 
+  (which is fine, as we removed it from the main app-views).
+*/
