@@ -86,6 +86,7 @@ input, textarea, [contenteditable="true"],
 
 #app-container {
     max-width: 896px; /* MODIFIED: Was 768px. Matches max-w-4xl */
+    width: 100%; /* NEW: Ensures it shrinks on mobile */
 }
 
 /* --- Theme Toggle & Settings Buttons --- */
@@ -129,6 +130,10 @@ header nav {
     border-bottom: 2px solid var(--color-border);
     position: relative;
     top: 2px;
+    /* NEW: Allow buttons to wrap */
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
 /* MODIFIED: Reverted to tab style */
@@ -141,7 +146,7 @@ header nav {
     border-radius: 0;
     border-bottom: 4px solid transparent;
     transition: all 0.2s ease;
-    white-space: nowrap;
+    /* REMOVED: white-space: nowrap; */
 }
 
 /* MODIFIED: Reverted to tab style */
