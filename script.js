@@ -209,12 +209,18 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadDeckFromURL() {
         // MODIFIED: rawDeck is now an object
         let rawDeck = getDefaultDeck();
-        const hash = window.location.hash.substring(1);
+        let hash = window.location.hash.substring(1); // <-- Get hash as 'let'
         const defaultSettings = { shuffle: false, termFirst: true };
 
         if (hash) {
+            
+            // --- FIX FOR MOBILE SHARING ---
+            // Mobile apps often replace '+' with ' ' in URLs. We must change them back.
+            hash = hash.replace(/ /g, '+');
+            // --- END FIX ---
+
             try {
-                const jsonString = atob(hash);
+                const jsonString = atob(hash); // Decode the *fixed* hash
                 const parsedDeck = JSON.parse(jsonString);
                 
                 // Check for new structure (with settings)
@@ -1052,3 +1058,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 });
+
