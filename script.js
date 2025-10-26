@@ -70,7 +70,8 @@ document.addEventListener('DOMContentLoaded', () => {
         learnFeedback: document.getElementById('learn-feedback'),
         learnCompleteView: document.getElementById('learn-complete-view'),
         learnRestartButton: document.getElementById('learn-restart-button'),
-        learnSwitchModeButton: document.getElementById('learn-switch-mode-button'), // MODIFIED
+        // MODIFIED: Corrected the ID to match the HTML
+        learnSwitchModeButton: document.getElementById('learn-switch-type-button'), 
 
         // NEW: Type View
         typeView: document.getElementById('type-view'),
@@ -471,16 +472,34 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.settingToggleStartWith.addEventListener('click', handleStartWithSettingChange);
     
         // NEW: Learn Complete Listeners
-        dom.learnRestartButton.addEventListener('click', startLearnMode);
-        dom.learnSwitchModeButton.addEventListener('click', () => setMode('type'));
+        // MODIFIED: Added check for null in case element doesn't exist
+        if (dom.learnRestartButton) {
+            dom.learnRestartButton.addEventListener('click', startLearnMode);
+        }
+        if (dom.learnSwitchModeButton) {
+            dom.learnSwitchModeButton.addEventListener('click', () => setMode('type'));
+        }
 
         // NEW: Type Mode Listeners
-        dom.typeInputForm.addEventListener('submit', handleTypeAnswer);
-        dom.typeSubmitButton.addEventListener('click', handleTypeAnswer);
-        dom.typeOverrideWrongButton.addEventListener('click', handleTypeOverrideWrong); // MODIFIED
-        dom.typeOverrideCorrectButton.addEventListener('click', handleTypeOverrideCorrect); // NEW
-        dom.typeRestartButton.addEventListener('click', startTypeMode);
-        dom.typeSwitchModeButton.addEventListener('click', () => setMode('learn'));
+        // MODIFIED: Added checks for null to prevent script crash
+        if (dom.typeInputForm) {
+            dom.typeInputForm.addEventListener('submit', handleTypeAnswer);
+        }
+        if (dom.typeSubmitButton) {
+            dom.typeSubmitButton.addEventListener('click', handleTypeAnswer);
+        }
+        if (dom.typeOverrideWrongButton) {
+            dom.typeOverrideWrongButton.addEventListener('click', handleTypeOverrideWrong);
+        }
+        if (dom.typeOverrideCorrectButton) {
+            dom.typeOverrideCorrectButton.addEventListener('click', handleTypeOverrideCorrect);
+        }
+        if (dom.typeRestartButton) {
+            dom.typeRestartButton.addEventListener('click', startTypeMode);
+        }
+        if (dom.typeSwitchModeButton) {
+            dom.typeSwitchModeButton.addEventListener('click', () => setMode('learn'));
+        }
     }
 
     // --- NEW: About Modal Functions ---
@@ -618,6 +637,44 @@ document.addEventListener('DOMContentLoaded', () => {
             // 5. Change content
             // MODIFIED: Use studyDeck length
             app.currentCardIndex = (app.currentCardIndex - 1 + app.studyDeck.length) % app.studyDeck.length;
+            renderFlashcardContent(); // Update text
+            
+            // 6. Force reflow to apply instant changes
+            void dom.flashcardContainer.offsetWidth; 
+
+            // 7. Remove class to re-enable flip animation for next click
+            dom.flashcardContainer.classList.remove('no-flip-animation');
+            
+            // 8. Fade in
+            dom.flashcardContainer.style.opacity = 1;
+
+            // 9. Allow new animations
+            setTimeout(() => {
+                app.isAnimating = false;
+            }, 200); // Wait for fade in
+        }, 200); // Wait for fade out
+    }
+    
+    // MODIFIED: Re-written to fix animation bug.
+    function showNextCard() {
+        // MODIFIED: Use studyDeck
+        if (app.studyDeck.length === 0 || app.isAnimating) return;
+        app.isAnimating = true;
+
+        // 1. Fade out
+        dom.flashcardContainer.style.opacity = 0;
+
+        // 2. Wait for fade to finish (200ms from CSS)
+        setTimeout(() => {
+            // 3. Add class to disable flip animation
+            dom.flashcardContainer.classList.add('no-flip-animation');
+            
+            // 4. Instantly remove 'is-flipped' (so it's on the front face)
+            dom.flashcardContainer.classList.remove('is-flipped');
+            
+            // 5. Change content
+            // MODIFIED: Use studyDeck length
+            app.currentCardIndex = (app.currentCardIndex + 1) % app.studyDeck.length;
             renderFlashcardContent(); // Update text
             
             // 6. Force reflow to apply instant changes
@@ -831,7 +888,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Note: app.currentLearnCard is an object from the studyDeck, but it's
         // a reference to the *same object* in app.currentDeck.cards,
-        app.currentLearnCard.lastReviewed = now; // This line is now redundant
+        // so progress updates correctly.
         dom.learnFeedback.classList.remove('hidden');
 
         saveProgressToLocalStorage();
@@ -892,7 +949,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         dom.typeOverrideWrongButton.classList.add('hidden'); 
         dom.typeOverrideCorrectButton.classList.add('hidden'); 
-    } // <-- FIX: Added the missing closing brace for renderTypeQuestion
+    } 
 
     /**
      * Handles the user submitting a typed answer.
@@ -953,6 +1010,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // MODIFIED: Store card *before* moving it
             app.lastTypeCard = app.typeSessionCards.shift(); // Remove and store
             app.typeSessionCards.push(app.lastTypeCard); // Move to back
+            
+            // THE FIX: Changed DELLAY (2 L's) back to DELAY (1 L)
             nextQuestionDelay = TYPE_INCORRECT_DELAY;
         }
 
@@ -1293,6 +1352,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
         return matrix[b.length][a.length];
     }
+    
+    /**
+     * NEW: Updates the URL hash without reloading the page.
+     * Used for saving settings.
+     */
+    function updateURLHash() {
+        try {
+            // Create base deck from app.currentDeck, including settings
+            const baseDeck = {
+                title: app.currentDeck.title,
+                cards: app.currentDeck.cards.map(({ term, definition }) => ({ term, definition })),
+                settings: app.currentDeck.settings
+            };
+            const jsonString = JSON.stringify(baseDeck);
+            const base64String = btoa(jsonString);
+            // Use history.replaceState to avoid adding to browser history
+            history.replaceState(null, '', `#${base64String}`);
+        } catch (error) {
+            console.error("Error updating hash:", error);
+            showToast("Error saving settings.");
+        }
+    }
 
 
     // --- START THE APP ---
@@ -1357,4 +1438,5 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 });
+
 
