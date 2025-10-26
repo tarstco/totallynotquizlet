@@ -25,7 +25,12 @@ document.addEventListener('DOMContentLoaded', () => {
         toastTimeout: null,
         isAnimating: false,
         draggedItem: null, // For drag and drop
-        createMode: 'manual' // 'manual' or 'paste'
+        createMode: 'manual', // 'manual' or 'paste'
+        // NEW: Swipe navigation
+        touchStartX: 0,
+        touchStartY: 0,
+        touchEndX: 0,
+        touchEndY: 0
     };
 
     // --- DOM ELEMENTS ---
@@ -417,6 +422,11 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.prevCardButton.addEventListener('click', showPrevCard);
         dom.nextCardButton.addEventListener('click', showNextCard);
 
+        // NEW: Swipe navigation for flashcards
+        dom.flashcardContainer.addEventListener('touchstart', handleTouchStart, { passive: true });
+        dom.flashcardContainer.addEventListener('touchmove', handleTouchMove, { passive: true });
+        dom.flashcardContainer.addEventListener('touchend', handleTouchEnd);
+
         // Create deck controls (MODIFIED)
         dom.parseDeckButton.addEventListener('click', parseAndLoadDeck);
         dom.addCardButton.addEventListener('click', () => createNewCardRow());
@@ -626,43 +636,63 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 200); // Wait for fade out
     }
 
-    // MODIFIED: Re-written to fix animation bug.
-    function showNextCard() {
-        // MODIFIED: Use studyDeck
-        if (app.studyDeck.length === 0 || app.isAnimating) return;
-        app.isAnimating = true;
-
-        // 1. Fade out
-        dom.flashcardContainer.style.opacity = 0;
-
-        // 2. Wait for fade to finish (200ms from CSS)
-        setTimeout(() => {
-            // 3. Add class to disable flip animation
-            dom.flashcardContainer.classList.add('no-flip-animation');
-            
-            // 4. Instantly remove 'is-flipped' (so it's on the front face)
-            dom.flashcardContainer.classList.remove('is-flipped');
-
-            // 5. Change content
-            // MODIFIED: Use studyDeck length
-            app.currentCardIndex = (app.currentCardIndex + 1) % app.studyDeck.length;
-            renderFlashcardContent(); // Update text
-
-            // 6. Force reflow to apply instant changes
-            void dom.flashcardContainer.offsetWidth; 
-
-            // 7. Remove class to re-enable flip animation for next click
-            dom.flashcardContainer.classList.remove('no-flip-animation');
-            
-            // 8. Fade in
-            dom.flashcardContainer.style.opacity = 1;
-            
-            // 9. Allow new animations
-            setTimeout(() => {
-                app.isAnimating = false;
-            }, 200); // Wait for fade in
-        }, 200); // Wait for fade out
+    // --- NEW: Swipe Navigation Handlers ---
+    
+    /**
+     * Records the start of a touch event for swiping
+     */
+    function handleTouchStart(e) {
+        app.touchStartX = e.changedTouches[0].screenX;
+        app.touchStartY = e.changedTouches[0].screenY;
+        // Reset end coordinates
+        app.touchEndX = 0; 
+        app.touchEndY = 0;
     }
+
+    /**
+     * Records the movement of a touch (needed for touchend)
+     */
+    function handleTouchMove(e) {
+        app.touchEndX = e.changedTouches[0].screenX;
+        app.touchEndY = e.changedTouches[0].screenY;
+    }
+
+    /**
+     * Determines if a swipe occurred and navigates cards
+     */
+    function handleTouchEnd(e) {
+        // Check if touch moved significantly
+        if (app.touchEndX === 0) {
+            // No 'touchmove' event fired, so this is a tap.
+            // Allow the 'click' event to proceed for flipping.
+            return; 
+        }
+
+        const dx = app.touchEndX - app.touchStartX;
+        const dy = app.touchEndY - app.touchStartY;
+        const threshold = 75; // Min pixels for a swipe
+        
+        // Check if horizontal swipe is dominant and passes threshold
+        if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > threshold) {
+            // Horizontal swipe detected
+            if (dx > 0) {
+                // Swipe Right (Previous Card)
+                showPrevCard();
+            } else {
+                // Swipe Left (Next Card)
+                showNextCard();
+            }
+            
+            // This was a swipe, so prevent the 'click' event from flipping the card
+            e.preventDefault(); 
+        }
+
+        // Reset start coordinates for the next touch
+        app.touchStartX = 0;
+        app.touchStartY = 0;
+        // Note: End coordinates are reset in touchstart
+    }
+
 
     // --- LEARN MODE ---
 
@@ -854,6 +884,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.typeInputArea.disabled = false;
         dom.typeSubmitButton.disabled = false;
         dom.typeFeedback.classList.add('hidden');
+        dom.typeFeedback.classList.remove('correct', 'incorrect', 'close'); // <-- THE FIX
         
         // MODIFIED: Explicitly clear feedback text
         dom.typeFeedbackMessage.textContent = '';
@@ -1326,3 +1357,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 });
+
