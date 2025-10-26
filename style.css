@@ -85,7 +85,7 @@ input, textarea, [contenteditable="true"],
 
 
 #app-container {
-    max-width: 768px; /* Slightly narrower than before */
+    max-width: 896px; /* MODIFIED: Was 768px. Matches max-w-4xl */
 }
 
 /* --- Theme Toggle & Settings Buttons --- */
@@ -603,6 +603,10 @@ body.light-mode #flashcard-nav button:hover {
     font-weight: 700; /* Bolder */
     border-radius: var(--border-radius-button);
     padding: 1rem;
+    /* NEW: Center align the contents */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 #type-feedback.correct {
     background-color: var(--color-correct-light);
@@ -621,18 +625,25 @@ body.light-mode #flashcard-nav button:hover {
     color: var(--color-text-secondary);
     font-size: 1rem;
 }
-#type-override-button {
-    /* Use secondary button styles but smaller */
-    background-color: var(--color-card-bg);
+/* MODIFIED: Removed old #type-override-button styles */
+
+/* NEW: Style for both override buttons as underlined text */
+.type-override-button {
+    background: none;
+    border: none;
     color: var(--color-text-secondary);
-    border: 1px solid var(--color-border);
     font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: underline;
+    padding: 0;
+    margin-top: 0.75rem; /* 12px */
+    cursor: pointer;
+    transition: color 0.2s ease;
 }
-#type-override-button:hover {
-    background-color: var(--color-bg-secondary);
+.type-override-button:hover {
     color: var(--color-text-primary);
-    border-color: var(--color-text-secondary);
 }
+
 
 /* --- Empty / Disabled States --- */
 #empty-deck-view p, 
@@ -773,3 +784,4 @@ body.light-mode .settings-toggle-button.active {
   The 'hidden' class from Tailwind will now work as expected 
   (which is fine, as we removed it from the main app-views).
 */
+
