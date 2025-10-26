@@ -8,6 +8,7 @@
     --color-primary-light: #2a3b7d;
     --color-primary-dark: #3a5bf0;
     --color-secondary: #ffcd1f; /* Quizlet Yellow */
+    --color-secondary-light: #443c1c; /* NEW: for 'close' bg */
     
     --color-bg: #131b33; /* Dark Blue Background */
     --color-bg-secondary: #1a2342; /* Slightly lighter bg */
@@ -36,7 +37,8 @@ body.light-mode {
     --color-primary: #4257b2;
     --color-primary-light: #f0f3ff;
     --color-primary-dark: #3a4b99;
-    --color-secondary: #ffcd1f;
+    --color-secondary: #f2b000; /* Darker yellow for text */
+    --color-secondary-light: #fffbeb; /* NEW: for 'close' bg */
     
     --color-bg: #f6f7fb;
     --color-bg-secondary: #ffffff;
@@ -229,6 +231,7 @@ body.light-mode #share-deck-button:hover {
 body[data-mode="create"] #create-view,
 body[data-mode="flashcards"] #flashcards-view,
 body[data-mode="learn"] #learn-view,
+body[data-mode="type"] #type-view, /* NEW */
 body[data-mode="empty"] #empty-deck-view {
     display: block;
     animation: fadeIn 0.3s ease;
@@ -243,7 +246,10 @@ body[data-mode="empty"] #empty-deck-view {
 #empty-deck-view, 
 #learn-mode-disabled,
 #learn-question-box,
-#learn-complete-view { /* NEW */
+#learn-complete-view,
+#type-mode-disabled, /* NEW */
+#type-question-box, /* NEW */
+#type-complete-view { /* NEW */
     background-color: var(--color-bg-secondary);
     box-shadow: var(--shadow-md);
     border-radius: var(--border-radius-card);
@@ -563,8 +569,77 @@ body.light-mode #flashcard-nav button:hover {
     color: var(--color-incorrect);
 }
 
+/* --- NEW: Type Mode --- */
+#type-question-box {
+    border-radius: var(--border-radius-card);
+}
+#type-question-term {
+    font-size: 2rem;
+    font-weight: 700; /* Bolder */
+}
+#type-input-area {
+    background-color: var(--color-card-bg);
+    border: 2px solid var(--color-border);
+    border-radius: var(--border-radius-button);
+    color: var(--color-text-primary);
+    transition: all 0.2s ease;
+}
+#type-input-area:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    background-color: var(--color-bg-secondary);
+}
+#type-input-area:disabled {
+    background-color: var(--color-bg);
+    color: var(--color-text-secondary);
+}
+#type-submit-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#type-feedback {
+    font-size: 1.1rem;
+    font-weight: 700; /* Bolder */
+    border-radius: var(--border-radius-button);
+    padding: 1rem;
+}
+#type-feedback.correct {
+    background-color: var(--color-correct-light);
+    color: var(--color-correct);
+}
+#type-feedback.incorrect {
+    background-color: var(--color-incorrect-light);
+    color: var(--color-incorrect);
+}
+#type-feedback.close {
+    background-color: var(--color-secondary-light);
+    color: var(--color-secondary);
+}
+#type-feedback-correct-answer {
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    font-size: 1rem;
+}
+#type-override-button {
+    /* Use secondary button styles but smaller */
+    background-color: var(--color-card-bg);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+    font-weight: 600;
+}
+#type-override-button:hover {
+    background-color: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+    border-color: var(--color-text-secondary);
+}
+
 /* --- Empty / Disabled States --- */
-#empty-deck-view p, #learn-mode-disabled p, #learn-complete-view p { /* NEW */
+#empty-deck-view p, 
+#learn-mode-disabled p, 
+#learn-complete-view p,
+#type-mode-disabled p, /* NEW */
+#type-complete-view p { /* NEW */
     color: var(--color-text-secondary);
     font-size: 1.1rem;
 }
