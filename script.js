@@ -80,7 +80,8 @@ document.addEventListener('DOMContentLoaded', () => {
         typeFeedback: document.getElementById('type-feedback'),
         typeFeedbackMessage: document.getElementById('type-feedback-message'),
         typeFeedbackCorrectAnswer: document.getElementById('type-feedback-correct-answer'),
-        typeOverrideButton: document.getElementById('type-override-button'),
+        typeOverrideWrongButton: document.getElementById('type-override-wrong-button'), // MODIFIED
+        typeOverrideCorrectButton: document.getElementById('type-override-correct-button'), // NEW
         typeRestartButton: document.getElementById('type-restart-button'),
         typeSwitchModeButton: document.getElementById('type-switch-mode-button'),
 
@@ -466,7 +467,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // NEW: Type Mode Listeners
         dom.typeInputForm.addEventListener('submit', handleTypeAnswer);
         dom.typeSubmitButton.addEventListener('click', handleTypeAnswer);
-        dom.typeOverrideButton.addEventListener('click', handleTypeOverride);
+        dom.typeOverrideWrongButton.addEventListener('click', handleTypeOverrideWrong); // MODIFIED
+        dom.typeOverrideCorrectButton.addEventListener('click', handleTypeOverrideCorrect); // NEW
         dom.typeRestartButton.addEventListener('click', startTypeMode);
         dom.typeSwitchModeButton.addEventListener('click', () => setMode('learn'));
     }
@@ -852,7 +854,8 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.typeInputArea.disabled = false;
         dom.typeSubmitButton.disabled = false;
         dom.typeFeedback.classList.add('hidden');
-        dom.typeOverrideButton.classList.add('hidden');
+        dom.typeOverrideWrongButton.classList.add('hidden'); // MODIFIED
+        dom.typeOverrideCorrectButton.classList.add('hidden'); // NEW
         app.lastTypeCard = null; // Clear override cache
 
         dom.typeInputArea.focus(); // Focus the input
@@ -879,7 +882,8 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.typeInputArea.disabled = true;
         dom.typeSubmitButton.disabled = true;
         dom.typeFeedback.classList.remove('hidden', 'correct', 'incorrect', 'close');
-        dom.typeOverrideButton.classList.add('hidden');
+        dom.typeOverrideWrongButton.classList.add('hidden'); // MODIFIED
+        dom.typeOverrideCorrectButton.classList.add('hidden'); // NEW
 
         let nextQuestionDelay = TYPE_INCORRECT_DELAY;
 
@@ -898,7 +902,7 @@ document.addEventListener('DOMContentLoaded', () => {
             dom.typeFeedback.classList.add('close');
             dom.typeFeedbackMessage.textContent = "Close!";
             dom.typeFeedbackCorrectAnswer.textContent = `Correct answer: ${correctAnswer}`;
-            dom.typeOverrideButton.classList.remove('hidden');
+            dom.typeOverrideWrongButton.classList.remove('hidden'); // MODIFIED
 
             // Assume correct, but cache the card in case of override
             updateCardProgress(app.currentTypeCard, true);
@@ -910,9 +914,12 @@ document.addEventListener('DOMContentLoaded', () => {
             dom.typeFeedback.classList.add('incorrect');
             dom.typeFeedbackMessage.textContent = "Incorrect.";
             dom.typeFeedbackCorrectAnswer.textContent = `Correct answer: ${correctAnswer}`;
+            dom.typeOverrideCorrectButton.classList.remove('hidden'); // NEW
             
             updateCardProgress(app.currentTypeCard, false);
-            app.typeSessionCards.push(app.typeSessionCards.shift()); // Move to back
+            // MODIFIED: Store card *before* moving it
+            app.lastTypeCard = app.typeSessionCards.shift(); // Remove and store
+            app.typeSessionCards.push(app.lastTypeCard); // Move to back
             nextQuestionDelay = TYPE_INCORRECT_DELAY;
         }
 
@@ -921,9 +928,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * Handles the "I got it wrong" override button.
+     * MODIFIED: Handles the "I got it wrong" override button.
      */
-    function handleTypeOverride() {
+    function handleTypeOverrideWrong() {
         if (!app.lastTypeCard) return; // No card to override
 
         // 1. Re-add the card to the end of the session
@@ -935,10 +942,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 3. Clear the cache and hide the button
         app.lastTypeCard = null;
-        dom.typeOverrideButton.classList.add('hidden');
+        dom.typeOverrideWrongButton.classList.add('hidden');
 
         // 4. Give feedback
         showToast("Got it. We'll ask that one again.");
+    }
+
+    /**
+     * NEW: Handles the "I got it correct" override button.
+     */
+    function handleTypeOverrideCorrect() {
+        if (!app.lastTypeCard) return; // No card to override
+
+        // 1. Update progress to correct
+        updateCardProgress(app.lastTypeCard, true);
+        saveProgressToLocalStorage();
+
+        // 2. The card is at the end of the session array. Find and remove it.
+        const cardIndex = app.typeSessionCards.lastIndexOf(app.lastTypeCard);
+        if (cardIndex > -1) {
+            app.typeSessionCards.splice(cardIndex, 1);
+        }
+
+        // 3. Clear cache and hide button
+        app.lastTypeCard = null;
+        dom.typeOverrideCorrectButton.classList.add('hidden');
+
+        // 4. Give feedback
+        showToast("Great! Marking that as correct.");
     }
 
 
@@ -1293,6 +1324,5 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 });
-
 
 
