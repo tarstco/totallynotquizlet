@@ -861,6 +861,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         dom.typeOverrideWrongButton.classList.add('hidden'); 
         dom.typeOverrideCorrectButton.classList.add('hidden'); 
+    } // <-- FIX: Added the missing closing brace for renderTypeQuestion
+
     /**
      * Handles the user submitting a typed answer.
      */
