@@ -439,6 +439,7 @@ body.light-mode .create-toggle-button.active {
     transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease-in-out;
     box-shadow: var(--shadow-lg);
     border-radius: var(--border-radius-card); /* More rounded */
+    touch-action: none; /* NEW: Prevent scrolling on swipe */
 }
 
 /* NEW: This class disables the flip animation temporarily */
