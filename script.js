@@ -1480,4 +1480,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 // FIXED: Removed the extra trailing '}' that was causing a syntax error
-
