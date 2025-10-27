@@ -70,8 +70,8 @@ document.addEventListener('DOMContentLoaded', () => {
         learnFeedback: document.getElementById('learn-feedback'),
         learnCompleteView: document.getElementById('learn-complete-view'),
         learnRestartButton: document.getElementById('learn-restart-button'),
-        // FIXED: Corrected the ID to match the HTML ('learn-switch-mode-button')
-        learnSwitchModeButton: document.getElementById('learn-switch-mode-button'), 
+        // MODIFIED: Corrected the ID to match the HTML
+        learnSwitchModeButton: document.getElementById('learn-switch-type-button'), 
 
         // NEW: Type View
         typeView: document.getElementById('type-view'),
@@ -239,13 +239,18 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadDeckFromURL() {
         // MODIFIED: rawDeck is now an object
         let rawDeck = getDefaultDeck();
-        let hash = window.location.hash.substring(1); // <-- Get hash
+        let hash = window.location.hash.substring(1); // <-- Get hash as 'let'
         const defaultSettings = { shuffle: false, termFirst: true };
 
         if (hash) {
+            
+            // --- FIX FOR MOBILE SHARING ---
+            // Mobile apps often replace '+' with ' ' in URLs. We must change them back.
+            hash = hash.replace(/ /g, '+');
+            // --- END FIX ---
+
             try {
-                // MODIFIED: Use URL-safe atob
-                const jsonString = urlSafeAtob(hash); 
+                const jsonString = atob(hash); // Decode the *fixed* hash
                 const parsedDeck = JSON.parse(jsonString);
                 
                 // Check for new structure (with settings)
@@ -292,6 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /**
      * Returns a default sample deck.
+     * FIXED: Removed the duplicate function. This is the only one.
      */
     function getDefaultDeck() {
         // MODIFIED: Return new deck object structure with settings
@@ -519,12 +525,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function hideSettingsModal() {
         dom.settingsModalOverlay.classList.remove('visible');
         
-        // FIXED: Force-reset both learn and type sessions so new settings (like shuffle) apply
-        app.learnSessionCards = []; 
-        app.typeSessionCards = [];
+        // NEW: Force-reset the learn session so new settings (like shuffle) apply
+        if (app.currentMode === 'learn') {
+            app.learnSessionCards = []; 
+        }
 
         // If mode is flashcards or learn, reset the view to apply changes
-        if (app.currentMode === 'flashcards' || app.currentMode === 'learn' || app.currentMode === 'type') {
+        if (app.currentMode === 'flashcards' || app.currentMode === 'learn') {
             setMode(app.currentMode);
         }
     }
@@ -610,7 +617,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.cardCounter.textContent = `${app.currentCardIndex + 1} / ${app.studyDeck.length}`;
     }
 
-    // FIXED: Re-written to fix animation bug.
+    // MODIFIED: Re-written to fix animation bug.
     function showPrevCard() {
         // MODIFIED: Use studyDeck
         if (app.studyDeck.length === 0 || app.isAnimating) return;
@@ -636,7 +643,7 @@ document.addEventListener('DOMContentLoaded', () => {
             void dom.flashcardContainer.offsetWidth; 
 
             // 7. Remove class to re-enable flip animation for next click
-            // dom.flashcardContainer.classList.remove('no-flip-animation'); // <-- This was moved
+            dom.flashcardContainer.classList.remove('no-flip-animation');
             
             // 8. Fade in
             dom.flashcardContainer.style.opacity = 1;
@@ -644,13 +651,11 @@ document.addEventListener('DOMContentLoaded', () => {
             // 9. Allow new animations
             setTimeout(() => {
                 app.isAnimating = false;
-                // NEW: Remove class *after* fade-in is complete
-                dom.flashcardContainer.classList.remove('no-flip-animation');
             }, 200); // Wait for fade in
         }, 200); // Wait for fade out
     }
     
-    // FIXED: Re-written to fix animation bug.
+    // MODIFIED: Re-written to fix animation bug.
     function showNextCard() {
         // MODIFIED: Use studyDeck
         if (app.studyDeck.length === 0 || app.isAnimating) return;
@@ -676,7 +681,7 @@ document.addEventListener('DOMContentLoaded', () => {
             void dom.flashcardContainer.offsetWidth; 
 
             // 7. Remove class to re-enable flip animation for next click
-            // dom.flashcardContainer.classList.remove('no-flip-animation'); // <-- This was moved
+            dom.flashcardContainer.classList.remove('no-flip-animation');
             
             // 8. Fade in
             dom.flashcardContainer.style.opacity = 1;
@@ -684,8 +689,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // 9. Allow new animations
             setTimeout(() => {
                 app.isAnimating = false;
-                // NEW: Remove class *after* fade-in is complete
-                dom.flashcardContainer.classList.remove('no-flip-animation');
             }, 200); // Wait for fade in
         }, 200); // Wait for fade out
     }
@@ -938,7 +941,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.typeInputArea.disabled = false;
         dom.typeSubmitButton.disabled = false;
         dom.typeFeedback.classList.add('hidden');
-        dom.typeFeedback.classList.remove('correct', 'incorrect', 'close');
+        dom.typeFeedback.classList.remove('correct', 'incorrect', 'close'); // <-- THE FIX
         
         // MODIFIED: Explicitly clear feedback text
         dom.typeFeedbackMessage.textContent = '';
@@ -946,9 +949,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         dom.typeOverrideWrongButton.classList.add('hidden'); 
         dom.typeOverrideCorrectButton.classList.add('hidden'); 
-
-        // Focus the input
-        dom.typeInputArea.focus();
     } 
 
     /**
@@ -1011,7 +1011,7 @@ document.addEventListener('DOMContentLoaded', () => {
             app.lastTypeCard = app.typeSessionCards.shift(); // Remove and store
             app.typeSessionCards.push(app.lastTypeCard); // Move to back
             
-            // FIXED: Changed 'nextQuestionDellay' to 'nextQuestionDelay'
+            // THE FIX: Changed DELLAY (2 L's) back to DELAY (1 L)
             nextQuestionDelay = TYPE_INCORRECT_DELAY;
         }
 
@@ -1226,8 +1226,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const jsonString = JSON.stringify(newDeck);
-            // FIXED: Use URL-safe btoa
-            const base64String = urlSafeBtoa(jsonString);
+            const base64String = btoa(jsonString);
             window.location.hash = base64String;
             location.reload(); 
         } catch (error) {
@@ -1254,8 +1253,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 settings: app.currentDeck.settings
             };
             const jsonString = JSON.stringify(baseDeck);
-            // FIXED: Use URL-safe btoa
-            const base64String = urlSafeBtoa(jsonString);
+            const base64String = btoa(jsonString);
             const url = `${window.location.origin}${window.location.pathname}#${base64String}`;
 
             if (navigator.clipboard) {
@@ -1368,51 +1366,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 settings: app.currentDeck.settings
             };
             const jsonString = JSON.stringify(baseDeck);
-            // FIXED: Use URL-safe btoa
-            const base64String = urlSafeBtoa(jsonString);
+            const base64String = btoa(jsonString);
             // Use history.replaceState to avoid adding to browser history
             history.replaceState(null, '', `#${base64String}`);
         } catch (error) {
             console.error("Error updating hash:", error);
             showToast("Error saving settings.");
-        }
-    }
-
-    // --- NEW: URL-Safe Base64 Handlers ---
-
-    /**
-     * Encodes a string into URL-safe base64.
-     * @param {string} str The string to encode.
-     * @returns {string} The URL-safe base64 string.
-     */
-    function urlSafeBtoa(str) {
-        // Use a TextEncoder to handle UTF-8 characters correctly
-        const bytes = new TextEncoder().encode(str);
-        const binString = String.fromCodePoint(...bytes);
-        return btoa(binString)
-            .replace(/\+/g, '-') // Replace + with -
-            .replace(/\//g, '_') // Replace / with _
-            .replace(/=+$/, ''); // Remove trailing =
-    }
-
-    /**
-     * Decodes a URL-safe base64 string.
-     * @param {string} str The URL-safe base64 string.
-     * @returns {string} The decoded string.
-     */
-    function urlSafeAtob(str) {
-        str = str.replace(/-/g, '+').replace(/_/g, '/'); // Convert back to standard chars
-        // Add padding
-        while (str.length % 4) {
-            str += '=';
-        }
-        try {
-            const binString = atob(str);
-            const bytes = Uint8Array.from(binString, (m) => m.codePointAt(0));
-            return new TextDecoder().decode(bytes);
-        } catch (e) {
-            console.error('atob failed:', e);
-            return ''; // Return empty string on failure
         }
     }
 
@@ -1479,4 +1438,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 });
-// FIXED: Removed the extra trailing '}' that was causing a syntax error
+
