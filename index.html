@@ -247,7 +247,23 @@
         <!-- NEW: Footer -->
         <footer class="text-center p-6 mt-8 border-t">
             <p class="mb-2">Created by someone</p>
-            <button id="about-button" class="underline cursor-pointer">About</button>
+            <!-- MODIFIED: Wrapped links in a div for layout -->
+            <div class="flex justify-center space-x-4">
+                <!-- MODIFIED: Changed to a class 'footer-link' and added 'underline' -->
+                <button id="about-button" class="footer-link underline cursor-pointer">About</button>
+                
+                <!-- NEW: Bug Report Link -->
+                <!-- TODO: Insert your Google Form link in the href="#" -->
+                <a href="https://forms.gle/aorM6MFQvaTMf16j9" class="footer-link underline">
+                    Bug Report
+                </a>
+                
+                <!-- NEW: Feature Request Link -->
+                <!-- TODO: Insert your Google Form link in the href="#" -->
+                <a href="https://forms.gle/Z1xESserXb1NVVDv6" class="footer-link underline">
+                    Feature Request
+                </a>
+            </div>
         </footer>
         
         <!-- Toast Notification -->
