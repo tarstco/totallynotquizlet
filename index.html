@@ -39,11 +39,12 @@
         <header class="mb-6 pt-12">
             <!-- MODIFIED: Added id="header-title" -->
             <h1 id="header-title" class="text-3xl text-center mb-6">Totally Not Quizlet</h1>
-            <!-- MODIFIED: Added "Type" button -->
+            <!-- MODIFIED: Added "Match" button -->
             <nav class="flex justify-center p-2 space-x-1 md:space-x-2">
                 <button data-mode="flashcards" class="nav-button flex-1 rounded-md">Flashcards</button>
                 <button data-mode="learn" class="nav-button flex-1 rounded-md">Learn</button>
-                <button data-mode="type" class="nav-button flex-1 rounded-md">Type</button> <!-- NEW -->
+                <button data-mode="type" class="nav-button flex-1 rounded-md">Type</button>
+                <button data-mode="match" class="nav-button flex-1 rounded-md">Match</button> <!-- NEW -->
                 <button data-mode="create" class="nav-button flex-1 rounded-md">Create</button>
                 <button id="share-deck-button" class="flex-1 rounded-md hidden">Share Deck</button>
             </nav>
@@ -202,6 +203,45 @@
                 </div>
             </div>
 
+            <!-- NEW: Match Mode View -->
+            <div id="match-view" class="app-view">
+                <!-- Disabled state -->
+                <div id="match-mode-disabled" class="text-center p-8 md:p-12 rounded-lg hidden">
+                    <h2 class="text-2xl font-semibold mb-4">Match Mode Needs More Cards</h2>
+                    <p>This mode requires at least 2 cards in your deck. Please add more cards to get started.</p>
+                </div>
+
+                <!-- Game state -->
+                <div id="match-mode-game" class="hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold">Match the pairs!</h2>
+                        <div id="match-timer" class="text-2xl font-bold">0.0s</div>
+                    </div>
+                    <div id="match-game-area" class="grid grid-cols-2 gap-4">
+                        <div id="match-terms-list" class="space-y-3">
+                            <!-- Term items inserted by JS -->
+                        </div>
+                        <div id="match-defs-list" class="space-y-3">
+                            <!-- Definition items inserted by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Complete state -->
+                <div id="match-complete-view" class="text-center p-8 md:p-12 rounded-lg hidden">
+                    <h2 class="text-2xl font-semibold mb-4">You've matched them all!</h2>
+                    <p class="mb-8">Great job! You've completed this set.</p>
+                    <div class="flex flex-col md:flex-row gap-4 justify-center">
+                        <button id="match-restart-button" class="main-action-button font-medium py-3 px-6 rounded-lg">
+                            Play Again
+                        </button>
+                        <button data-mode="learn" class="nav-button secondary-action-button font-medium py-3 px-6 rounded-lg">
+                            Switch to Learn
+                        </button>
+                    </div>
+                </div>
+            </div>
+
         </main>
 
         <!-- NEW: Footer -->
@@ -232,7 +272,7 @@
                 account and risk getting your personal information sold. Simply press the "Share 
                 Deck" button in the top menu to instantly copy the link to your clipboard for fast 
                 sharing. Your progress is stored locally in your browser and will not be deleted 
-                unless you clear your history or switch devices. This site is still under works 
+                unless you clear your history or site data. This site is still under works 
                 and will contine to bring new features over time. Enjoy studying!
             </p>
         </div>
@@ -271,4 +311,3 @@
     <script src="script.js"></script>
 </body>
 </html>
-
