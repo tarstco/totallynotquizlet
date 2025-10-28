@@ -356,9 +356,11 @@ document.addEventListener('DOMContentLoaded', () => {
             dom.headerTitle.textContent = "Totally Not Quizlet";
         }
 
-
+        // ***** START PROGRESS RESET FIX *****
+        const previousMode = app.currentMode; // Store the old mode
         app.currentMode = mode;
         dom.body.dataset.mode = mode;
+        // ***** END PROGRESS RESET FIX *****
 
         dom.navButtons.forEach(btn => {
             btn.classList.toggle('active', btn.dataset.mode === mode);
@@ -378,7 +380,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (mode === 'flashcards') {
             // studyDeck is already created and shuffled (or not)
-            app.currentCardIndex = 0;
+            
+            // ***** START PROGRESS RESET FIX *****
+            // Only reset the card index if we are coming from a DIFFERENT mode.
+            // If we are just re-loading the flashcard view (e.g., from modal close),
+            // keep the current index.
+            if (previousMode !== 'flashcards') {
+                app.currentCardIndex = 0;
+            }
+            // *Always* render and reset the flip state, just don't reset the index.
+            // ***** END PROGRESS RESET FIX *****
+            
             renderFlashcardContent();
             dom.flashcardContainer.classList.remove('is-flipped');
         } else if (mode === 'learn') {
@@ -548,12 +560,14 @@ document.addEventListener('DOMContentLoaded', () => {
         app.currentDeck.settings.shuffle = !app.currentDeck.settings.shuffle;
         updateSettingsToggle(dom.settingToggleShuffle, app.currentDeck.settings.shuffle, "Shuffle");
         updateURLHash();
+        app.currentCardIndex = 0; // ***** PROGRESS RESET FIX *****
     }
 
     function handleStartWithSettingChange() {
         app.currentDeck.settings.termFirst = !app.currentDeck.settings.termFirst;
         updateSettingsToggle(dom.settingToggleStartWith, app.currentDeck.settings.termFirst, "Term", "Definition");
         updateURLHash();
+        app.currentCardIndex = 0; // ***** PROGRESS RESET FIX *****
     }
 
     /** Helper to update a toggle button's appearance */
@@ -628,22 +642,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 2. Wait for fade to finish (200ms from CSS)
         setTimeout(() => {
-            // 3. Add class to disable flip animation
-            dom.flashcardContainer.classList.add('no-flip-animation');
+            // 3. ***** START FIX V3 *****
+            // Temporarily disable ONLY transform transition
+            dom.flashcardContainer.style.transition = 'opacity 0.2s ease-in-out';
             
-            // 4. Instantly remove 'is-flipped' (so it's on the front face)
-            dom.flashcardContainer.classList.remove('is-flipped');
-            
-            // 5. Change content
-            // MODIFIED: Use studyDeck length
+            // 4. Change content
             app.currentCardIndex = (app.currentCardIndex - 1 + app.studyDeck.length) % app.studyDeck.length;
             renderFlashcardContent(); // Update text
             
-            // 6. Force reflow to apply instant changes
+            // 5. Instantly remove 'is-flipped' (so it's on the front face)
+            dom.flashcardContainer.classList.remove('is-flipped');
+            
+            // 6. Force reflow 
             void dom.flashcardContainer.offsetWidth; 
 
-            // 7. Remove class to re-enable flip animation for next click
-            dom.flashcardContainer.classList.remove('no-flip-animation');
+            // 7. Re-enable all transitions
+            dom.flashcardContainer.style.transition = ''; 
+            // ***** END FIX V3 *****
             
             // 8. Fade in
             dom.flashcardContainer.style.opacity = 1;
@@ -666,22 +681,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 2. Wait for fade to finish (200ms from CSS)
         setTimeout(() => {
-            // 3. Add class to disable flip animation
-            dom.flashcardContainer.classList.add('no-flip-animation');
+            // 3. ***** START FIX V3 *****
+            // Temporarily disable ONLY transform transition
+            dom.flashcardContainer.style.transition = 'opacity 0.2s ease-in-out';
             
-            // 4. Instantly remove 'is-flipped' (so it's on the front face)
-            dom.flashcardContainer.classList.remove('is-flipped');
-            
-            // 5. Change content
-            // MODIFIED: Use studyDeck length
+            // 4. Change content
             app.currentCardIndex = (app.currentCardIndex + 1) % app.studyDeck.length;
             renderFlashcardContent(); // Update text
             
-            // 6. Force reflow to apply instant changes
+            // 5. Instantly remove 'is-flipped' (so it's on the front face)
+            dom.flashcardContainer.classList.remove('is-flipped');
+            
+            // 6. Force reflow 
             void dom.flashcardContainer.offsetWidth; 
 
-            // 7. Remove class to re-enable flip animation for next click
-            dom.flashcardContainer.classList.remove('no-flip-animation');
+            // 7. Re-enable all transitions
+            dom.flashcardContainer.style.transition = '';
+            // ***** END FIX V3 *****
             
             // 8. Fade in
             dom.flashcardContainer.style.opacity = 1;
@@ -1438,4 +1454,3 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 });
-
