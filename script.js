@@ -27,6 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
         matchTimerInterval: null,
         matchStartTime: 0,
         matchItemsLeft: 0,
+        matchBestTime: Infinity, // NEW
+        matchStorageKey: 'flashcardAppMatchBestTime', // NEW
         isCheckingMatch: false, // Prevents double-clicks
 
         progressData: new Map(), // Stores progress keyed by 'term|definition'
@@ -107,6 +109,9 @@ document.addEventListener('DOMContentLoaded', () => {
         matchModeGame: document.getElementById('match-mode-game'),
         matchCompleteView: document.getElementById('match-complete-view'),
         matchTimer: document.getElementById('match-timer'),
+        matchBestTime: document.getElementById('match-best-time'), // NEW
+        matchStartScreen: document.getElementById('match-start-screen'), // NEW
+        matchStartButton: document.getElementById('match-start-button'), // NEW
         matchGameArea: document.getElementById('match-game-area'),
         matchTermsList: document.getElementById('match-terms-list'),
         matchDefsList: document.getElementById('match-defs-list'),
@@ -161,6 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function init() {
         loadTheme(); // NEW: Load theme first
         loadProgressFromLocalStorage();
+        loadBestTimeFromLocalStorage(); // NEW
         loadDeckFromURL();
         addEventListeners();
         
@@ -236,6 +242,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
+     * NEW: Loads the best match time from localStorage.
+     */
+    function loadBestTimeFromLocalStorage() {
+        try {
+            const storedTime = localStorage.getItem(app.matchStorageKey);
+            if (storedTime) {
+                const parsedTime = parseFloat(storedTime);
+                if (!isNaN(parsedTime)) {
+                    app.matchBestTime = parsedTime;
+                }
+            }
+        } catch (error) {
+            console.error("Error loading best time from localStorage:", error);
+        }
+    }
+
+    /**
      * Saves the current deck's progress to localStorage.
      */
     function saveProgressToLocalStorage() {
@@ -253,6 +276,19 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem(app.localStorageKey, JSON.stringify(progressToSave));
         } catch (error) {
             console.error("Error saving progress to localStorage:", error);
+        }
+    }
+
+    /**
+     * NEW: Saves the best match time to localStorage.
+     */
+    function saveBestTimeToLocalStorage() {
+        try {
+            if (app.matchBestTime !== Infinity && !isNaN(app.matchBestTime)) {
+                localStorage.setItem(app.matchStorageKey, app.matchBestTime.toString());
+            }
+        } catch (error) {
+            console.error("Error saving best time to localStorage:", error);
         }
     }
 
@@ -372,6 +408,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (app.currentDeck.cards.length < 2 && mode === 'match') {
             dom.matchModeGame.classList.add('hidden');
             dom.matchCompleteView.classList.add('hidden');
+            dom.matchStartScreen.classList.add('hidden'); // NEW
             dom.matchModeDisabled.classList.remove('hidden');
         } else if (mode === 'match') {
             dom.matchModeDisabled.classList.add('hidden');
@@ -446,8 +483,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // NEW: Start match mode
         } else if (mode === 'match') {
             if (app.currentDeck.cards.length >= 2) {
-                if (app.matchSessionCards.length === 0 || previousMode !== 'match') {
-                    startMatchMode();
+                // MODIFIED: Handle preserving state vs. starting new
+                if (previousMode !== 'match') {
+                    startMatchMode(); // This will show the start screen
                 }
             }
         }
@@ -555,6 +593,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // NEW: Match Mode Listeners
         if (dom.matchRestartButton) {
             dom.matchRestartButton.addEventListener('click', startMatchMode);
+        }
+        if (dom.matchStartButton) { // NEW
+            dom.matchStartButton.addEventListener('click', startMatchRound);
         }
         if (dom.matchGameArea) {
             dom.matchGameArea.addEventListener('click', handleMatchClick);
@@ -1134,24 +1175,45 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- NEW: MATCH MODE ---
 
     /**
-     * Starts the entire Match mode session.
+     * MODIFIED: Starts the entire Match mode session by showing the start screen.
      */
     function startMatchMode() {
         if (app.studyDeck.length < 2) return;
         
+        // Hide game and complete, show start screen
         dom.matchCompleteView.classList.add('hidden');
-        dom.matchModeGame.classList.remove('hidden');
+        dom.matchModeGame.classList.add('hidden');
+        dom.matchStartScreen.classList.remove('hidden');
 
+        // Reset session cards
         app.matchSessionCards = [...app.studyDeck]; // Create session list
         shuffleArray(app.matchSessionCards); // Shuffle session list
 
-        startMatchRound();
+        // Update best time display
+        updateBestTimeDisplay();
     }
 
     /**
-     * Starts a new round of the Match game.
+     * NEW: Updates the best time display.
+     */
+    function updateBestTimeDisplay() {
+        if (app.matchBestTime === Infinity) {
+            dom.matchBestTime.textContent = 'Best: --.-s';
+        } else {
+            dom.matchBestTime.textContent = `Best: ${app.matchBestTime.toFixed(1)}s`;
+        }
+    }
+
+
+    /**
+     * MODIFIED: Starts a new round of the Match game (called by Start button).
      */
     function startMatchRound() {
+        // Hide start screen, show game
+        dom.matchStartScreen.classList.add('hidden');
+        dom.matchModeGame.classList.remove('hidden');
+        dom.matchCompleteView.classList.add('hidden');
+
         // Clear any existing timer
         if (app.matchTimerInterval) {
             clearInterval(app.matchTimerInterval);
@@ -1163,21 +1225,18 @@ document.addEventListener('DOMContentLoaded', () => {
         app.selectedDef = null;
         app.isCheckingMatch = false;
 
-        // Check for completion
-        if (app.matchSessionCards.length < 2) {
-            dom.matchModeGame.classList.add('hidden');
-            dom.matchCompleteView.classList.remove('hidden');
-            return;
-        }
-
-        // Ensure game is visible
-        dom.matchModeGame.classList.remove('hidden');
-        dom.matchCompleteView.classList.add('hidden');
-
         // Get cards for this round
         const roundCards = app.matchSessionCards.slice(0, MATCH_ROUND_SIZE);
         app.matchItemsLeft = roundCards.length;
         
+        // Check if there are enough cards to play
+        if (app.matchItemsLeft < 2) {
+            dom.matchModeGame.classList.add('hidden');
+            dom.matchCompleteView.classList.remove('hidden');
+            // This case handles finishing the entire set
+            return;
+        }
+
         // Prepare lists
         let termItems = [];
         let defItems = [];
@@ -1276,8 +1335,29 @@ document.addEventListener('DOMContentLoaded', () => {
             // Check if round is complete
             if (app.matchItemsLeft === 0) {
                 clearInterval(app.matchTimerInterval);
+                app.matchTimerInterval = null; // NEW: Clear interval ID
                 saveProgressToLocalStorage();
-                setTimeout(startMatchRound, 1000); // Start next round
+
+                // NEW: Best Time Logic
+                const finalTime = (Date.now() - app.matchStartTime) / 1000;
+                if (finalTime < app.matchBestTime) {
+                    app.matchBestTime = finalTime;
+                    saveBestTimeToLocalStorage();
+                    updateBestTimeDisplay();
+                    showToast(`New best time: ${finalTime.toFixed(1)}s!`);
+                }
+                
+                // MODIFIED: Check if there are more cards for another round
+                if (app.matchSessionCards.length >= 2) {
+                    // More cards, start next round
+                    setTimeout(startMatchRound, 1000); 
+                } else {
+                    // No more cards, show final complete screen
+                    setTimeout(() => {
+                        dom.matchModeGame.classList.add('hidden');
+                        dom.matchCompleteView.classList.remove('hidden');
+                    }, 1000); // Wait 1 sec
+                }
             }
             
             app.isCheckingMatch = false; // Unlock
@@ -1480,7 +1560,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error("Error creating deck hash:", error);
             // MODIFIED: Don't use alert
-            showToast("An error occurred while trying to load the new deck.");
+            showToast("An error occurred while trying to load the new deck. Try Removing Special Characters.");
         }
     }
 
