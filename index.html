@@ -26,7 +26,7 @@
         <!-- NEW: Settings Button -->
         <button id="settings-button" class="absolute top-6 left-6 md:top-8 md:left-10 z-50 p-2 rounded-full transition-all duration-300 hidden">
             <!-- Settings Icon -->
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826 3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
         </button>
 
         <!-- Theme Toggle Button -->
@@ -45,8 +45,9 @@
             <nav class="flex justify-center p-2 space-x-1 md:space-x-2">
                 <button data-mode="flashcards" class="nav-button flex-1 rounded-md">Flashcards</button>
                 <button data-mode="learn" class="nav-button flex-1 rounded-md">Learn</button>
+                <!-- MODIFIED: Reordered tabs -->
+                <button data-mode="match" class="nav-button flex-1 rounded-md">Match</button> 
                 <button data-mode="type" class="nav-button flex-1 rounded-md">Type</button>
-                <button data-mode="match" class="nav-button flex-1 rounded-md">Match</button> <!-- NEW -->
                 <button data-mode="create" class="nav-button flex-1 rounded-md">Create</button>
                 <button id="share-deck-button" class="flex-1 rounded-md hidden">Share Deck</button>
             </nav>
@@ -213,11 +214,24 @@
                     <p>This mode requires at least 2 cards in your deck. Please add more cards to get started.</p>
                 </div>
 
+                <!-- NEW: Start Screen -->
+                <div id="match-start-screen" class="text-center p-8 md:p-12 rounded-lg hidden">
+                    <h2 class="text-2xl font-semibold mb-4">Match Game</h2>
+                    <p class="mb-8">Find the matching terms and definitions as fast as you can!</p>
+                    <button id="match-start-button" class="main-action-button font-medium py-3 px-6 rounded-lg">
+                        Start Game
+                    </button>
+                </div>
+
                 <!-- Game state -->
                 <div id="match-mode-game" class="hidden">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-xl font-bold">Match the pairs!</h2>
-                        <div id="match-timer" class="text-2xl font-bold">0.0s</div>
+                        <!-- MODIFIED: Wrapped timer for best time -->
+                        <div class="text-right">
+                            <div id="match-timer" class="text-2xl font-bold">0.0s</div>
+                            <div id="match-best-time" class="text-sm">Best: --.-s</div>
+                        </div>
                     </div>
                     <div id="match-game-area" class="grid grid-cols-2 gap-4">
                         <div id="match-terms-list" class="space-y-3">
