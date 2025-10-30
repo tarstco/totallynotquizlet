@@ -569,6 +569,10 @@ body.light-mode #flashcard-nav button:hover {
     font-weight: 700; /* Bolder */
     border-radius: var(--border-radius-button);
     padding: 1rem;
+    /* NEW: Center align content */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 #learn-feedback.correct {
     background-color: var(--color-correct-light);
@@ -848,6 +852,27 @@ footer {
 }
 body.light-mode .settings-toggle-button.active {
     color: var(--color-primary);
+}
+
+/* --- NEW: Continue Button (Learn/Type) --- */
+.continue-button {
+    background-color: var(--color-primary);
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: none;
+    border-radius: var(--border-radius-button);
+    padding: 0.5rem 1rem;
+    /* margin-top: 1rem; */ /* MODIFIED: Removed margin */
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    /* NEW: Center text in flex container */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.continue-button:hover {
+    background-color: var(--color-primary-dark);
 }
 
 
