@@ -26,7 +26,8 @@
         <!-- NEW: Settings Button -->
         <button id="settings-button" class="absolute top-6 left-6 md:top-8 md:left-10 z-50 p-2 rounded-full transition-all duration-300 hidden">
             <!-- Settings Icon -->
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826 3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            <!-- FIXED: Corrected the SVG path data to remove the "chunk" -->
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
         </button>
 
         <!-- Theme Toggle Button -->
@@ -137,7 +138,13 @@
                     </div>
                     <div id="learn-options" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     </div>
-                    <div id="learn-feedback" class="mt-6 p-4 rounded-lg text-center font-medium hidden"></div>
+                    <!-- MODIFIED: Re-structured feedback and continue button -->
+                    <div id="learn-feedback-container" class="mt-6 flex gap-4 hidden">
+                        <div id="learn-feedback" class="flex-grow p-4 rounded-lg text-center font-medium">
+                            <span id="learn-feedback-message"></span>
+                        </div>
+                        <button id="learn-continue-button" class="continue-button hidden">Continue</button>
+                    </div>
                 </div>
                 <div id="learn-complete-view" class="text-center p-8 md:p-12 rounded-lg hidden">
                     <h2 class="text-2xl font-semibold mb-4">You've mastered this round!</h2>
@@ -146,9 +153,9 @@
                         <button id="learn-restart-button" class="main-action-button font-medium py-3 px-6 rounded-lg">
                             Start Again
                         </button>
-                        <!-- MODIFIED: Changed ID and text -->
+                        <!-- MODIFIED: Changed text -->
                         <button id="learn-switch-mode-button" class="secondary-action-button font-medium py-3 px-6 rounded-lg">
-                            Switch to Type
+                            Switch to Match
                         </button>
                     </div>
                 </div>
@@ -177,17 +184,21 @@
                         </div>
                     </form>
 
-                    <div id="type-feedback" class="mt-4 p-4 rounded-lg text-center font-medium hidden">
-                        <p id="type-feedback-message" class="text-lg"></p>
-                        <p id="type-feedback-correct-answer" class="mt-2"></p>
-                        <!-- MODIFIED: Renamed ID and added class -->
-                        <button id="type-override-wrong-button" class="type-override-button hidden">
-                            I got it wrong
-                        </button>
-                        <!-- NEW: "I got it correct" button -->
-                        <button id="type-override-correct-button" class="type-override-button hidden">
-                            I got it correct
-                        </button>
+                    <!-- MODIFIED: Re-structured feedback and continue button -->
+                    <div id="type-feedback-container" class="mt-4 flex gap-4 hidden">
+                        <div id="type-feedback" class="flex-grow p-4 rounded-lg text-center font-medium">
+                            <p id="type-feedback-message" class="text-lg"></p>
+                            <p id="type-feedback-correct-answer" class="mt-2"></p>
+                            <!-- MODIFIED: Renamed ID and added class -->
+                            <button id="type-override-wrong-button" class="type-override-button hidden">
+                                I got it wrong
+                            </button>
+                            <!-- NEW: "I got it correct" button -->
+                            <button id="type-override-correct-button" class="type-override-button hidden">
+                                I got it correct
+                            </button>
+                        </div>
+                        <button id="type-continue-button" class="continue-button hidden">Continue</button>
                     </div>
                 </div>
 
@@ -199,8 +210,9 @@
                         <button id="type-restart-button" class="main-action-button font-medium py-3 px-6 rounded-lg">
                             Start Again
                         </button>
+                        <!-- MODIFIED: Changed text -->
                         <button id="type-switch-mode-button" class="secondary-action-button font-medium py-3 px-6 rounded-lg">
-                            Switch to Learn
+                            Switch to Flashcards
                         </button>
                     </div>
                 </div>
@@ -251,8 +263,9 @@
                         <button id="match-restart-button" class="main-action-button font-medium py-3 px-6 rounded-lg">
                             Play Again
                         </button>
-                        <button data-mode="learn" class="nav-button secondary-action-button font-medium py-3 px-6 rounded-lg">
-                            Switch to Learn
+                        <!-- MODIFIED: Changed data-mode and text -->
+                        <button data-mode="type" class="nav-button secondary-action-button font-medium py-3 px-6 rounded-lg">
+                            Switch to Type
                         </button>
                     </div>
                 </div>
