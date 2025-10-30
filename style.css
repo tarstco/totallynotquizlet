@@ -881,3 +881,22 @@ body.light-mode .settings-toggle-button.active {
   The 'hidden' class from Tailwind will now work as expected 
   (which is fine, as we removed it from the main app-views).
 */
+
+/* --- NEW: Progress Bar --- */
+.progress-bar-container {
+    width: 100%;
+    height: 12px;
+    background-color: var(--color-card-bg);
+    border-radius: 6px;
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.progress-bar {
+    width: 0%;
+    height: 100%;
+    background-color: var(--color-primary);
+    border-radius: 6px;
+    transition: width 0.3s ease;
+}
