@@ -76,6 +76,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Learn View
         learnView: document.getElementById('learn-view'),
+        learnProgressBarContainer: document.getElementById('learn-progress-container'), // NEW
+        learnProgressBar: document.getElementById('learn-progress-bar'), // NEW
         learnModeDisabled: document.getElementById('learn-mode-disabled'),
         learnModeQuiz: document.getElementById('learn-mode-quiz'),
         learnTerm: document.getElementById('learn-term'),
@@ -91,6 +93,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // NEW: Type View
         typeView: document.getElementById('type-view'),
+        typeProgressBarContainer: document.getElementById('type-progress-container'), // NEW
+        typeProgressBar: document.getElementById('type-progress-bar'), // NEW
         typeModeDisabled: document.getElementById('type-mode-disabled'),
         typeModeQuiz: document.getElementById('type-mode-quiz'),
         typeCompleteView: document.getElementById('type-complete-view'),
@@ -431,6 +435,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // ***** START PROGRESS RESET FIX *****
         const previousMode = app.currentMode; // Store the old mode
+        
+        // NEW: Hide progress bars if switching away
+        if (previousMode === 'learn' && mode !== 'learn') {
+            dom.learnProgressBarContainer.classList.add('hidden');
+        }
+        if (previousMode === 'type' && mode !== 'type') {
+            dom.typeProgressBarContainer.classList.add('hidden');
+        }
+
         app.currentMode = mode;
         dom.body.dataset.mode = mode;
         // ***** END PROGRESS RESET FIX *****
@@ -473,15 +486,17 @@ document.addEventListener('DOMContentLoaded', () => {
                  // MODIFIED: Only start a new session if one isn't active
                  if (app.learnSessionCards.length === 0 || previousMode !== 'learn') {
                     startLearnMode();
+                 } else {
+                    dom.learnProgressBarContainer.classList.remove('hidden'); // NEW: Ensure visible on tab back
                  }
-                 // If a session is active (length > 0), do nothing.
-                 // This preserves the user's progress when switching tabs.
             }
         // NEW: Start type mode
         } else if (mode === 'type') {
             if (app.currentDeck.cards.length >= 1) {
                 if (app.typeSessionCards.length === 0 || previousMode !== 'type') {
                     startTypeMode();
+                } else {
+                    dom.typeProgressBarContainer.classList.remove('hidden'); // NEW: Ensure visible on tab back
                 }
             }
         // NEW: Start match mode
@@ -934,10 +949,12 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.learnFeedbackContainer.classList.add('hidden'); // MODIFIED
         dom.learnCompleteView.classList.add('hidden'); // NEW: Hide complete view
         dom.learnModeQuiz.classList.remove('hidden'); // NEW: Show quiz view
+        dom.learnProgressBarContainer.classList.remove('hidden'); // NEW
         
         app.learnSessionCards = [...app.studyDeck]; // NEW: Create session list
         shuffleArray(app.learnSessionCards); // NEW: Shuffle session list
         
+        updateProgressBar('learn'); // NEW
         renderLearnQuestion();
     }
 
@@ -950,6 +967,8 @@ document.addEventListener('DOMContentLoaded', () => {
             app.correctAnswerTimeout = null;
         }
 
+        updateProgressBar('learn'); // NEW
+
         // NEW: Hide continue button
         dom.learnContinueButton.classList.add('hidden');
         
@@ -957,6 +976,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (app.learnSessionCards.length === 0) {
             dom.learnModeQuiz.classList.add('hidden');
             dom.learnCompleteView.classList.remove('hidden');
+            dom.learnProgressBarContainer.classList.add('hidden'); // NEW: Hide on complete
             return;
         }
 
@@ -1101,10 +1121,12 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.typeFeedbackContainer.classList.add('hidden'); // MODIFIED
         dom.typeCompleteView.classList.add('hidden');
         dom.typeModeQuiz.classList.remove('hidden');
+        dom.typeProgressBarContainer.classList.remove('hidden'); // NEW
         
         app.typeSessionCards = [...app.studyDeck]; // Create session list
         shuffleArray(app.typeSessionCards); // Shuffle session list
         
+        updateProgressBar('type'); // NEW
         renderTypeQuestion();
     }
 
@@ -1118,6 +1140,8 @@ document.addEventListener('DOMContentLoaded', () => {
             app.correctAnswerTimeout = null;
         }
 
+        updateProgressBar('type'); // NEW
+
         // NEW: Hide continue button
         dom.typeContinueButton.classList.add('hidden');
         
@@ -1125,6 +1149,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (app.typeSessionCards.length === 0) {
             dom.typeModeQuiz.classList.add('hidden');
             dom.typeCompleteView.classList.remove('hidden');
+            dom.typeProgressBarContainer.classList.add('hidden'); // NEW: Hide on complete
             return;
         }
 
@@ -1743,6 +1768,32 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- NEW: UTILITY FUNCTIONS ---
+
+    /**
+     * NEW: Updates the progress bar for Learn or Type mode.
+     * @param {string} mode - 'learn' or 'type'
+     */
+    function updateProgressBar(mode) {
+        const total = app.studyDeck.length;
+        if (total === 0) return; // Avoid divide by zero
+
+        let remaining, progressBar;
+
+        if (mode === 'learn') {
+            remaining = app.learnSessionCards.length;
+            progressBar = dom.learnProgressBar;
+        } else if (mode === 'type') {
+            remaining = app.typeSessionCards.length;
+            progressBar = dom.typeProgressBar;
+        } else {
+            return; // Not a valid mode for progress
+        }
+
+        const completed = total - remaining;
+        const percentage = (completed / total) * 100;
+        
+        progressBar.style.width = `${percentage}%`;
+    }
     
     /**
      * Shuffles an array in place. (Fisher-Yates shuffle)
