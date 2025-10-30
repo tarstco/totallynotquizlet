@@ -483,20 +483,29 @@ document.addEventListener('DOMContentLoaded', () => {
             // Now that studyDeck is ready, start learn mode
             // This check is needed again in case the mode was set programmatically
             if (app.currentDeck.cards.length >= 4) {
-                 // MODIFIED: Only start a new session if one isn't active
-                 if (app.learnSessionCards.length === 0 || previousMode !== 'learn') {
+                 // NEW: Only start a new session if the previous one is finished.
+                 if (app.learnSessionCards.length === 0) {
                     startLearnMode();
                  } else {
-                    dom.learnProgressBarContainer.classList.remove('hidden'); // NEW: Ensure visible on tab back
+                    // A session is in progress, just resume.
+                    dom.learnModeQuiz.classList.remove('hidden'); // Ensure quiz is visible
+                    dom.learnCompleteView.classList.add('hidden'); // Ensure complete is hidden
+                    dom.learnProgressBarContainer.classList.remove('hidden'); // Ensure bar is visible
+                    updateProgressBar('learn'); // Update bar to show current progress
                  }
             }
         // NEW: Start type mode
         } else if (mode === 'type') {
             if (app.currentDeck.cards.length >= 1) {
-                if (app.typeSessionCards.length === 0 || previousMode !== 'type') {
+                // NEW: Only start a new session if the previous one is finished.
+                if (app.typeSessionCards.length === 0) {
                     startTypeMode();
                 } else {
-                    dom.typeProgressBarContainer.classList.remove('hidden'); // NEW: Ensure visible on tab back
+                    // A session is in progress, just resume.
+                    dom.typeModeQuiz.classList.remove('hidden'); // Ensure quiz is visible
+                    dom.typeCompleteView.classList.add('hidden'); // Ensure complete is hidden
+                    dom.typeProgressBarContainer.classList.remove('hidden'); // Ensure bar is visible
+                    updateProgressBar('type'); // Update bar to show current progress
                 }
             }
         // NEW: Start match mode
