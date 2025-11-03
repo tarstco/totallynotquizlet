@@ -163,6 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const INCORRECT_INTERVAL = 60 * 1000; // 1 minute
     const TYPE_CLOSE_THRESHOLD = 2; // NEW: Max Levenshtein distance for "close"
     const CORRECT_ANSWER_DELAY = 1000; // NEW: 1 second delay for auto-advance
+    const CLOSE_ANSWER_DELAY = 3000; // *** NEW *** 3 second delay for "close" answers
     const MATCH_INCORRECT_DELAY = 1000; // NEW: Delay for match mode
     const MATCH_ROUND_SIZE = 10; // NEW: Max cards per match round
 
@@ -176,6 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadProgressFromLocalStorage();
         loadBestTimeFromLocalStorage(); // NEW
         loadDeckFromURL();
+        updateDocumentTitle(); // *** NEW *** Set tab title
         addEventListeners();
         
         // MODIFIED: Check cards array length and show/hide buttons
@@ -737,6 +739,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.headerTitle.textContent = newTitle;
         dom.deckTitleInput.value = newTitle; // Keep create view in sync
         updateURLHash(); // Save change
+        updateDocumentTitle(); // *** NEW *** Update tab title
     }
 
     function handleShuffleSettingChange() {
@@ -1042,24 +1045,58 @@ document.addEventListener('DOMContentLoaded', () => {
         return allCardsSorted[0];
     }
 
+    /**
+     * *** MODIFIED: This function now prioritizes distractors that are
+     * *** textually similar to the correct answer using Levenshtein distance.
+     */
     function generateQuizOptions(correctCard) {
         const options = new Set();
-        // NEW: Generate options based on termFirst setting
+        // Generate options based on termFirst setting
         const correctOption = app.currentDeck.settings.termFirst ? correctCard.definition : correctCard.term;
         options.add(correctOption);
 
-        // MODIFIED: Use studyDeck
+        // Get all other cards
         const distractorPool = app.studyDeck.filter(card => card.id !== correctCard.id);
         
-        shuffleArray(distractorPool); // Shuffle pool
+        // --- START OF NEW SIMILARITY LOGIC ---
+        
+        // 1. Calculate Levenshtein distance for all potential distractors
+        const weightedDistractors = distractorPool.map(card => {
+            const distractorOption = app.currentDeck.settings.termFirst ? card.definition : card.term;
+            const distance = levenshteinDistance(correctOption.toLowerCase(), distractorOption.toLowerCase());
+            return { option: distractorOption, distance: distance };
+        })
+        // 2. Filter out exact matches to the correct answer (distance === 0)
+        .filter(distractor => distractor.distance > 0)
+        // 3. Sort by similarity (lowest distance first)
+        .sort((a, b) => a.distance - b.distance);
 
-        for (const card of distractorPool) {
+        // 4. Add the most similar (but not identical) options
+        for (const distractor of weightedDistractors) {
             if (options.size < 4) {
-                // NEW: Get the correct field for the option
-                const distractorOption = app.currentDeck.settings.termFirst ? card.definition : card.term;
-                options.add(distractorOption);
+                options.add(distractor.option);
             } else {
                 break;
+            }
+        }
+        
+        // --- END OF NEW SIMILARITY LOGIC ---
+
+        // 5. If we still don't have 4 options (e.g., all answers were identical)
+        //    fill in with any remaining random distractors that aren't already added.
+        if (options.size < 4) {
+            // We can re-use the distractorPool, but we need to shuffle it
+            // to get random options this time.
+            shuffleArray(distractorPool); 
+
+            for (const card of distractorPool) {
+                if (options.size < 4) {
+                    const distractorOption = app.currentDeck.settings.termFirst ? card.definition : card.term;
+                    // .add() automatically handles duplicates, so this is safe
+                    options.add(distractorOption);
+                } else {
+                    break;
+                }
             }
         }
         
@@ -1230,7 +1267,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateCardProgress(app.currentTypeCard, true);
             app.typeSessionCards.shift(); // Remove from session
 
-            // NEW: Start auto-advance timer
+            // NEW: Start auto-advance timer (1 second)
             app.correctAnswerTimeout = setTimeout(renderTypeQuestion, CORRECT_ANSWER_DELAY);
 
         } else if (distance <= TYPE_CLOSE_THRESHOLD) {
@@ -1244,8 +1281,8 @@ document.addEventListener('DOMContentLoaded', () => {
             updateCardProgress(app.currentTypeCard, true);
             app.lastTypeCard = app.typeSessionCards.shift(); // Remove and store
 
-            // NEW: Start auto-advance timer
-            app.correctAnswerTimeout = setTimeout(renderTypeQuestion, CORRECT_ANSWER_DELAY);
+            // *** MODIFIED *** Start auto-advance timer (3 seconds)
+            app.correctAnswerTimeout = setTimeout(renderTypeQuestion, CLOSE_ANSWER_DELAY);
 
         } else {
             // --- Incorrect Match ---
@@ -1701,7 +1738,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error("Error creating deck hash:", error);
             // MODIFIED: Don't use alert
-            showToast("An error occurred while trying to load the new deck. Try Removing Special Characters.");
+            showToast("An error occurred while trying to load the new deck. Try Removing Subscript, Superscript, dashes, and en dashes.");
         }
     }
 
@@ -1777,6 +1814,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- NEW: UTILITY FUNCTIONS ---
+
+    /**
+     * *** NEW *** Sets the document's title (browser tab)
+     */
+    function updateDocumentTitle() {
+        if (app.currentDeck.title && app.currentDeck.title.trim() !== '') {
+            document.title = `${app.currentDeck.title} | totallynotquizlet`;
+        } else {
+            document.title = 'totallynotquizlet';
+        }
+    }
 
     /**
      * NEW: Updates the progress bar for Learn or Type mode.
