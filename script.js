@@ -150,6 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
         settingDeckTitle: document.getElementById('setting-deck-title'),
         settingToggleShuffle: document.getElementById('setting-toggle-shuffle'),
         settingToggleStartWith: document.getElementById('setting-toggle-start-with'),
+        copyDeckButton: document.getElementById('copy-deck-button') // NEW
     };
 
     // --- CONSTANTS ---
@@ -592,6 +593,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.settingDeckTitle.addEventListener('input', handleTitleSettingChange);
         dom.settingToggleShuffle.addEventListener('click', handleShuffleSettingChange);
         dom.settingToggleStartWith.addEventListener('click', handleStartWithSettingChange);
+        dom.copyDeckButton.addEventListener('click', copyDeckTerms); // NEW
     
         // NEW: Learn Complete Listeners
         // MODIFIED: Added check for null in case element doesn't exist
@@ -1743,6 +1745,40 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- SHARE DECK ---
+
+    /**
+     * NEW: Copies all terms and definitions to the clipboard in text format.
+     */
+    function copyDeckTerms() {
+        if (app.currentDeck.cards.length === 0) {
+            showToast("Cannot copy an empty deck!");
+            return;
+        }
+
+        try {
+            const textToCopy = app.currentDeck.cards.map(card => {
+                // Clean up terms/definitions to remove newlines that would break the format
+                const term = card.term.replace(/\n/g, ' ');
+                const definition = card.definition.replace(/\n/g, ' ');
+                return `${term},${definition}`; // The format is term,definition
+            }).join('\n');
+
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    showToast("Deck terms copied to clipboard!");
+                }).catch(err => {
+                    console.error("Failed to copy to clipboard:", err);
+                    fallbackCopyTextToClipboard(textToCopy); // Use existing fallback
+                });
+            } else {
+                fallbackCopyTextToClipboard(textToCopy); // Use existing fallback
+            }
+
+        } catch (error) {
+            console.error("Error generating text for copy:", error);
+            showToast("Error copying deck terms.");
+        }
+    }
 
     function shareDeck() {
         // MODIFIED: Check cards array length
