@@ -1,5 +1,10 @@
 /* --- CSS Variables (Color Palette) --- */
 
+/* NEW: Force scrollbar to prevent layout shift */
+html {
+    overflow-y: scroll;
+}
+
 /* DEFAULT (DARK MODE)
   User requested a dark blue default background
 */
