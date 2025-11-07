@@ -1139,36 +1139,71 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * *** MODIFIED: This function now selects 3 fully random distractors
-     * *** and shuffles the final positions.
+     * *** MODIFIED: This function now selects the 3 MOST SIMILAR distractors
+     * *** based on Levenshtein distance to make the quiz more challenging.
      */
     function generateQuizOptions(correctCard) {
-        const options = new Set();
-        // Generate options based on termFirst setting
-        const correctOption = app.currentDeck.settings.termFirst ? correctCard.definition : correctCard.term;
-        options.add(correctOption);
+        const termFirst = app.currentDeck.settings.termFirst;
+        
+        // 1. Determine the correct answer text
+        const correctOption = termFirst ? correctCard.definition : correctCard.term;
+        const textToCompare = correctOption.toLowerCase(); 
 
-        // Get all other cards and shuffle them
+        // 2. Create a pool of distractors, excluding the correct card
         const distractorPool = app.studyDeck.filter(card => card.id !== correctCard.id);
-        shuffleArray(distractorPool); 
 
-        // Add random distractors until we have 4 options
-        for (const card of distractorPool) {
-            if (options.size < 4) {
-                const distractorOption = app.currentDeck.settings.termFirst ? card.definition : card.term;
-                // .add() automatically handles duplicates, so this is safe
-                // (e.g., if two cards have the same definition)
-                options.add(distractorOption);
-            } else {
-                break;
+        // 3. Calculate Levenshtein distance for each distractor
+        const distractorsWithDistance = distractorPool.map(card => {
+            const distractorOption = termFirst ? card.definition : card.term;
+            const distance = levenshteinDistance(distractorOption.toLowerCase(), textToCompare);
+            
+            return {
+                optionText: distractorOption,
+                distance: distance
+            };
+        });
+
+        // 4. Sort distractors by distance (closest first)
+        distractorsWithDistance.sort((a, b) => a.distance - b.distance);
+
+        // 5. Build the final options list, prioritizing closest
+        const finalOptions = [correctOption];
+        const addedOptions = new Set();
+        addedOptions.add(correctOption);
+
+        // 6. Add the closest unique distractors
+        for (const distractor of distractorsWithDistance) {
+            if (finalOptions.length >= 4) {
+                break; // We have enough
+            }
+            if (!addedOptions.has(distractor.optionText)) {
+                finalOptions.push(distractor.optionText);
+                addedOptions.add(distractor.optionText);
+            }
+        }
+
+        // 7. If we still don't have 4 (e.g., small deck), fill with randoms
+        if (finalOptions.length < 4) {
+            const shuffledPool = [...distractorPool]; // Clone and shuffle
+            shuffleArray(shuffledPool);
+            
+            for (const card of shuffledPool) {
+                if (finalOptions.length >= 4) {
+                    break;
+                }
+                const randomOption = termFirst ? card.definition : card.term;
+                if (!addedOptions.has(randomOption)) {
+                    finalOptions.push(randomOption);
+                    addedOptions.add(randomOption);
+                }
             }
         }
         
-        // Final shuffle of positions
-        const shuffledOptions = Array.from(options);
-        shuffleArray(shuffledOptions);
+        // 8. Final shuffle of positions
+        shuffleArray(finalOptions);
 
-        return shuffledOptions;
+        // Ensure we only return 4 options, even if something weird happened
+        return finalOptions.slice(0, 4);
     }
 
     function handleLearnAnswer(event) {
@@ -1396,9 +1431,9 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast("Got it. We'll ask that one again.");
     }
 
-    /**
-     * NEW: Handles the "I got it correct" override button.
-     */
+/**
+ * NEW: Handles the "I got it correct" override button.
+ */
     function handleTypeOverrideCorrect() {
         if (!app.lastTypeCard) return; // No card to override
 
