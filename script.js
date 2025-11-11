@@ -378,13 +378,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (hash) {
             
             // --- FIX FOR MOBILE SHARING ---
-            // Mobile apps often replace '+' with ' ' in URLs. We must change them back.
-            hash = hash.replace(/ /g, '+');
+            // MODIFICATION: Removed the old `+` to ` ` fix, as it's no longer
+            // needed with URL-safe Base64 and would break the new decoding.
+            // hash = hash.replace(/ /g, '+'); // <-- REMOVED
             app.currentDeckHash = hash; // NEW: Store the hash
             // --- END FIX ---
 
             try {
-                const jsonString = atob(hash); // Decode the *fixed* hash
+                // MODIFICATION: Use new URL-safe decode function
+                const jsonString = base64UrlDecode(hash); // Decode the URL-safe hash
                 const parsedDeck = JSON.parse(jsonString);
                 
                 // Check for new structure (with settings)
@@ -401,6 +403,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             } catch (error) {
                 console.error("Error parsing deck from hash:", error);
+                
+                // NEW: Show a user-facing error message
+                showToast("Error loading deck. The link may be corrupted or from an old version.");
+
                 rawDeck = getDefaultDeck();
                 window.location.hash = ''; // Clear invalid hash
             }
@@ -1839,13 +1845,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const jsonString = JSON.stringify(newDeck);
-            const base64String = btoa(jsonString);
+            // MODIFICATION: Use new URL-safe encode function
+            const base64String = base64UrlEncode(jsonString);
             window.location.hash = base64String;
             location.reload(); 
         } catch (error) {
             console.error("Error creating deck hash:", error);
-            // MODIFIED: Don't use alert
-            showToast("An error occurred while trying to load the new deck. Try Removing Subscript, Superscript, dashes, and en dashes.");
+            // MODIFICATION: Updated error message to be more accurate
+            showToast("An error occurred while creating the deck. Please check your text for errors.");
         }
     }
 
@@ -1900,7 +1907,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 settings: app.currentDeck.settings
             };
             const jsonString = JSON.stringify(baseDeck);
-            const base64String = btoa(jsonString);
+            // MODIFICATION: Use new URL-safe encode function
+            const base64String = base64UrlEncode(jsonString);
             const url = `${window.location.origin}${window.location.pathname}#${base64String}`;
 
             if (navigator.clipboard) {
@@ -1955,6 +1963,39 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- NEW: UTILITY FUNCTIONS ---
+
+    /**
+     * *** NEW *** Encodes a string into a URL-safe Base64 format.
+     * @param {string} str - The raw string to encode (e.g., JSON).
+     * @returns {string} - The URL-safe Base64 string.
+     */
+    function base64UrlEncode(str) {
+        // First, encode to standard Base64
+        return btoa(str)
+            .replace(/\+/g, '-') // Replace + with -
+            .replace(/\//g, '_') // Replace / with _
+            .replace(/=+$/, ''); // Remove trailing padding
+    }
+
+    /**
+     * *** NEW *** Decodes a URL-safe Base64 string back to the original string.
+     * @param {string} str - The URL-safe Base64 string.
+     * @returns {string} - The original, decoded string.
+     */
+    function base64UrlDecode(str) {
+        // Add back URL-unsafe characters
+        str = str.replace(/-/g, '+') // Replace - with +
+                 .replace(/_/g, '/'); // Replace _ with /
+        
+        // Add padding back if necessary
+        const padding = str.length % 4;
+        if (padding) {
+            str += '===='.slice(padding);
+        }
+        
+        // Decode from standard Base64
+        return atob(str);
+    }
 
     /**
      * *** NEW *** Sets the document's title (browser tab)
@@ -2050,7 +2091,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 settings: app.currentDeck.settings
             };
             const jsonString = JSON.stringify(baseDeck);
-            const base64String = btoa(jsonString);
+            // MODIFICATION: Use new URL-safe encode function
+            const base64String = base64UrlEncode(jsonString);
             
             // NEW: Update the stored hash as well
             const newHash = `#${base64String}`;
