@@ -1970,8 +1970,14 @@ document.addEventListener('DOMContentLoaded', () => {
      * @returns {string} - The URL-safe Base64 string.
      */
     function base64UrlEncode(str) {
-        // First, encode to standard Base64
-        return btoa(str)
+        // 1. Convert string to UTF-8 bytes
+        const utf8Bytes = new TextEncoder().encode(str);
+        // 2. Convert bytes to a binary string (a string where each char code is 0-255)
+        const binaryString = String.fromCharCode.apply(null, utf8Bytes);
+        // 3. Encode binary string to Base64
+        const base64String = btoa(binaryString);
+        // 4. Make it URL-safe
+        return base64String
             .replace(/\+/g, '-') // Replace + with -
             .replace(/\//g, '_') // Replace / with _
             .replace(/=+$/, ''); // Remove trailing padding
@@ -1983,18 +1989,25 @@ document.addEventListener('DOMContentLoaded', () => {
      * @returns {string} - The original, decoded string.
      */
     function base64UrlDecode(str) {
-        // Add back URL-unsafe characters
+        // 1. Add back URL-unsafe characters and padding
         str = str.replace(/-/g, '+') // Replace - with +
                  .replace(/_/g, '/'); // Replace _ with /
-        
-        // Add padding back if necessary
         const padding = str.length % 4;
         if (padding) {
             str += '===='.slice(padding);
         }
         
-        // Decode from standard Base64
-        return atob(str);
+        // 2. Decode from Base64 to binary string
+        const binaryString = atob(str);
+        
+        // 3. Convert binary string to byte array
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        
+        // 4. Decode UTF-8 bytes back to string
+        return new TextDecoder().decode(bytes);
     }
 
     /**
