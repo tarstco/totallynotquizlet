@@ -119,6 +119,24 @@ body:not(.light-mode) #theme-icon-moon {
     display: none;
 }
 
+/* *** NEW: HEADER LOGO *** */
+#header-logo {
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px; /* 2.5rem */
+    height: 40px; /* 2.5rem */
+    border-radius: 10px; /* Slightly rounded */
+    border: 1px solid var(--color-border);
+    background-color: var(--color-card-bg); /* Give it a bg to pop */
+    padding: 4px; /* Small padding around the icon */
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+}
+#header-logo:hover {
+    transform: translateX(-50%) scale(1.05); /* Slight grow on hover */
+    box-shadow: var(--shadow-md);
+}
+
 
 /* --- Header & Navigation --- */
 header h1 {
