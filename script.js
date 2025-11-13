@@ -621,7 +621,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.flashcardContainer.addEventListener('touchmove', handleTouchMove, { passive: true });
         dom.flashcardContainer.addEventListener('touchend', handleTouchEnd);
         
-        // NEW: Global keydown listener for spacebar
+        // MODIFIED: Global keydown listener
         document.addEventListener('keydown', handleGlobalKeydown);
 
         // Create deck controls (MODIFIED)
@@ -735,7 +735,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * NEW: Handles global keydown events for shortcuts.
+     * MODIFIED: Handles global keydown events for shortcuts.
      */
     function handleGlobalKeydown(e) {
         // Don't interfere with typing in inputs
@@ -743,6 +743,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Handle Spacebar
         if (e.code === 'Space') {
             e.preventDefault(); // Stop page from scrolling
 
@@ -765,6 +766,44 @@ document.addEventListener('DOMContentLoaded', () => {
                     app.correctAnswerTimeout = null;
                 }
                 renderTypeQuestion();
+            }
+        }
+
+        // --- NEW: Handle Arrow Keys for Flashcards ---
+        if (app.currentMode === 'flashcards') {
+            if (e.code === 'ArrowLeft') {
+                e.preventDefault(); // Stop page scrolling
+                showPrevCard();
+            } else if (e.code === 'ArrowRight') {
+                e.preventDefault(); // Stop page scrolling
+                showNextCard();
+            }
+        }
+
+        // --- NEW: Handle Number/Letter Keys for Learn Mode ---
+        // Check if learn mode is active and the quiz view is visible
+        if (app.currentMode === 'learn' && !dom.learnModeQuiz.classList.contains('hidden')) {
+            // Check if options are currently enabled (i.e., not showing feedback)
+            const options = dom.learnOptions.querySelectorAll('button');
+            if (options.length === 0 || (options[0] && options[0].disabled)) {
+                return; // Don't trigger if options are disabled (feedback is showing)
+            }
+
+            let optionToClick = null;
+            // Use 'key' for 1,2,3,4 and 'code' for a,b,c,d to be robust
+            if (e.key === '1' || e.code === 'KeyA') {
+                optionToClick = options[0];
+            } else if (e.key === '2' || e.code === 'KeyB') {
+                optionToClick = options[1];
+            } else if (e.key === '3' || e.code === 'KeyC') {
+                optionToClick = options[2];
+            } else if (e.key === '4' || e.code === 'KeyD') {
+                optionToClick = options[3];
+            }
+
+            if (optionToClick) {
+                e.preventDefault();
+                optionToClick.click(); // Simulate a click on the button
             }
         }
     }
