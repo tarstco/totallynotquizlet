@@ -608,11 +608,27 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Flashcard controls
-        dom.flashcardContainer.addEventListener('click', () => {
-            if (!app.isAnimating) { // Don't flip while fading
+        // MODIFIED: Replaced original click listener to handle both
+        // flipping and TTS button clicks.
+        dom.flashcardContainer.addEventListener('click', (e) => {
+            // Check for TTS button click
+            const ttsButton = e.target.closest('.tts-button');
+            if (ttsButton) {
+                e.stopPropagation(); // Prevent the card from flipping
+                const cardFace = e.target.closest('.card-face');
+                if (cardFace) {
+                    const textToSpeak = cardFace.querySelector('p').textContent;
+                    if (textToSpeak) {
+                        speakText(textToSpeak);
+                    }
+                }
+            } 
+            // Check for flip click
+            else if (!app.isAnimating) { // Don't flip while fading
                 dom.flashcardContainer.classList.toggle('is-flipped');
             }
         });
+
         dom.prevCardButton.addEventListener('click', showPrevCard);
         dom.nextCardButton.addEventListener('click', showNextCard);
 
@@ -2128,6 +2144,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         return matrix[b.length][a.length];
+    }
+
+    /**
+     * NEW: Speaks the given text using the browser's TTS engine.
+     * @param {string} text - The text to speak.
+     */
+    function speakText(text) {
+        if ('speechSynthesis' in window) {
+            // Cancel any ongoing speech to prevent overlap
+            window.speechSynthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            
+            // You can customize language, pitch, and rate here if needed
+            // utterance.lang = 'en-US'; 
+            // utterance.pitch = 1;
+            // utterance.rate = 1;
+            
+            window.speechSynthesis.speak(utterance);
+        } else {
+            console.error("Text-to-speech not supported in this browser.");
+            showToast("Text-to-speech is not supported in this browser.");
+        }
     }
     
     /**
