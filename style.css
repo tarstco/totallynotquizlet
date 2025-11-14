@@ -119,22 +119,18 @@ body:not(.light-mode) #theme-icon-moon {
     display: none;
 }
 
-/* *** NEW: HEADER LOGO *** */
+/* *** MODIFIED: HEADER LOGO *** */
 #header-logo {
     left: 50%;
     transform: translateX(-50%);
     width: 40px; /* 2.5rem */
     height: 40px; /* 2.5rem */
-    border-radius: 10px; /* Slightly rounded */
-    border: 1px solid var(--color-border);
-    background-color: var(--color-card-bg); /* Give it a bg to pop */
-    padding: 4px; /* Small padding around the icon */
-    box-shadow: var(--shadow-sm);
+    /* Removed button styling (border, bg, padding, shadow) */
     transition: all 0.3s ease;
 }
 #header-logo:hover {
-    transform: translateX(-50%) scale(1.05); /* Slight grow on hover */
-    box-shadow: var(--shadow-md);
+    /* Removed hover effects */
+    transform: translateX(-50%); /* Maintain centering */
 }
 
 
@@ -467,6 +463,12 @@ body.light-mode .create-toggle-button.active {
     box-shadow: var(--shadow-lg);
     border-radius: var(--border-radius-card); /* More rounded */
     touch-action: none; /* NEW: Prevent scrolling on swipe */
+
+    /*
+      BUG FIX: This was moved to the .card-face elements,
+      as applying it here didn't work.
+    */
+    /* transform: translateZ(0); */
 }
 
 /* NEW: This class disables the flip animation temporarily */
@@ -475,6 +477,9 @@ body.light-mode .create-toggle-button.active {
 }
 
 .flashcard.is-flipped {
+    /*
+      BUG FIX: Removed translateZ(0) from here, moved to .card-back
+    */
     transform: rotateY(180deg);
 }
 
@@ -493,6 +498,14 @@ body.light-mode .create-toggle-button.active {
     overflow-wrap: break-word;
     word-break: break-word;
     text-align: center;
+
+    /*
+      BUG FIX: Add a base translateZ(0) to promote the card *faces*
+      to their own compositing layer. This is a more robust fix
+      for the "dipping" bug, as the faces are the elements with
+      backface-visibility and absolute positioning.
+    */
+    transform: translateZ(0);
 }
 #flashcard-front p {
     font-size: 2.5rem;
@@ -504,8 +517,36 @@ body.light-mode .create-toggle-button.active {
     color: var(--color-text-secondary);
 }
 .card-back {
-    transform: rotateY(180deg);
+    /*
+      BUG FIX: Combine the rotation with translateZ(0) to maintain
+      the rendering stabilization on the back face.
+    */
+    transform: rotateY(180deg) translateZ(0);
 }
+
+/* --- NEW: TTS Button --- */
+.tts-button {
+    position: absolute;
+    top: 1.5rem; /* 24px */
+    left: 1.5rem; /* 24px */
+    z-index: 10;
+    padding: 0.5rem; /* 8px */
+    border-radius: 9999px; /* fully-rounded */
+    background-color: rgba(0,0,0,0.1);
+    color: var(--color-text-secondary);
+    transition: all 0.2s ease;
+}
+.tts-button:hover {
+    background-color: var(--color-primary-light);
+    color: var(--color-primary);
+}
+body.light-mode .tts-button:hover {
+    color: var(--color-primary);
+}
+.tts-button:active {
+    transform: scale(0.95);
+}
+
 
 /* Flashcard Navigation */
 #flashcard-nav {
